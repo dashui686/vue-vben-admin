@@ -17,9 +17,17 @@ import { message } from 'ant-design-vue';
 
 import { useAuthStore } from '#/store';
 
-import { refreshTokenApi } from './core';
-
-const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
+// import { refreshTokenApi } from './core';
+import {
+  encryptBase64,
+  encryptWithAes,
+  generateAesKey,
+} from '#/utils/encryption/crypto';
+import * as encryptUtil from '#/utils/encryption/jsencrypt';
+const { apiURL, clientId, enableEncrypt } = useAppConfig(
+  import.meta.env,
+  import.meta.env.PROD,
+);
 
 function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   const client = new RequestClient({
@@ -49,11 +57,12 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
    * 刷新token逻辑
    */
   async function doRefreshToken() {
-    const accessStore = useAccessStore();
-    const resp = await refreshTokenApi();
-    const newToken = resp.data;
-    accessStore.setAccessToken(newToken);
-    return newToken;
+    // const accessStore = useAccessStore();
+    // const resp = await refreshTokenApi();
+    // const newToken = resp.data;
+    // accessStore.setAccessToken(newToken);
+    // return newToken;
+    return '';
   }
 
   function formatToken(token: null | string) {
@@ -64,9 +73,37 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   client.addRequestInterceptor({
     fulfilled: async (config) => {
       const accessStore = useAccessStore();
-
+      // 添加token
       config.headers.Authorization = formatToken(accessStore.accessToken);
+
+      /**
+       * locale跟后台不一致 需要转换
+       */
       config.headers['Accept-Language'] = preferences.app.locale;
+      config.headers['Content-Language'] = preferences.app.locale;
+      /**
+       * 添加全局clientId
+       * 关于header的clientId被错误绑定到实体类
+       * https://gitee.com/dapppp/ruoyi-plus-vben5/issues/IC0BDS
+       */
+      config.headers['clientId'] = clientId;
+
+      // 全局开启请求加密功能 && 该请求开启 && 是post/put请求
+      // const { encrypt } = config;
+      if (
+        enableEncrypt &&
+        ['POST', 'PUT'].includes(config.method?.toUpperCase() || '')
+      ) {
+        const aesKey = generateAesKey();
+        config.headers['encrypt-key'] = encryptUtil.encrypt(
+          encryptBase64(aesKey),
+        );
+
+        config.data =
+          typeof config.data === 'object'
+            ? encryptWithAes(JSON.stringify(config.data), aesKey)
+            : encryptWithAes(config.data, aesKey);
+      }
       return config;
     },
   });
@@ -76,7 +113,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     defaultResponseInterceptor({
       codeField: 'code',
       dataField: 'data',
-      successCode: 0,
+      successCode: 200,
     }),
   );
 
@@ -97,7 +134,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       // 这里可以根据业务进行定制,你可以拿到 error 内的信息进行定制化处理，根据不同的 code 做不同的提示，而不是直接使用 message.error 提示 msg
       // 当前mock接口返回的错误字段是 error 或者 message
       const responseData = error?.response?.data ?? {};
-      const errorMessage = responseData?.error ?? responseData?.message ?? '';
+      const errorMessage = responseData?.error ?? responseData?.msg ?? '';
       // 如果没有错误信息，则会根据状态码进行提示
       message.error(errorMessage || msg);
     }),
