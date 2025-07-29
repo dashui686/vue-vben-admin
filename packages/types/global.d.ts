@@ -9,6 +9,11 @@ declare module 'vue-router' {
 
 export interface VbenAdminProAppConfigRaw {
   VITE_GLOB_API_URL: string;
+  VITE_GLOB_APP_CLIENT_ID: string;
+  VITE_GLOB_ENABLE_ENCRYPT: string;
+  VITE_GLOB_RSA_PRIVATE_KEY: string;
+  VITE_GLOB_RSA_PUBLIC_KEY: string;
+  VITE_GLOB_SSE_ENABLE: string;
   VITE_GLOB_AUTH_DINGDING_CLIENT_ID: string;
   VITE_GLOB_AUTH_DINGDING_CORP_ID: string;
 }
@@ -22,6 +27,11 @@ interface AuthConfig {
 
 export interface ApplicationConfig {
   apiURL: string;
+  clientId: string;
+  enableEncrypt: boolean;
+  rsaPrivateKey: string;
+  rsaPublicKey: string;
+  sseEnable: boolean;
   auth: AuthConfig;
 }
 
