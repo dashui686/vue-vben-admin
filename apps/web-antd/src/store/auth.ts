@@ -1,4 +1,5 @@
-import type { Recordable, UserInfo } from '@vben/types';
+import type { LoginAndRegisterParams } from '@vben/common-ui';
+import type { UserInfo } from '@vben/types';
 
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -10,7 +11,7 @@ import { resetAllStores, useAccessStore, useUserStore } from '@vben/stores';
 import { notification } from 'ant-design-vue';
 import { defineStore } from 'pinia';
 
-import { getAccessCodesApi, getUserInfoApi, loginApi, logoutApi } from '#/api';
+import { getUserInfoApi, loginApi, logoutApi } from '#/api';
 import { $t } from '#/locales';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -26,47 +27,45 @@ export const useAuthStore = defineStore('auth', () => {
    * @param params 登录表单数据
    */
   async function authLogin(
-    params: Recordable<any>,
+    params: LoginAndRegisterParams,
     onSuccess?: () => Promise<void> | void,
   ) {
     // 异步处理用户登录操作并获取 accessToken
+    // eslint-disable-next-line no-useless-assignment
     let userInfo: null | UserInfo = null;
     try {
       loginLoading.value = true;
-      const { accessToken } = await loginApi(params);
+      const { access_token } = await loginApi(params);
 
-      // 如果成功获取到 accessToken
-      if (accessToken) {
-        accessStore.setAccessToken(accessToken);
+      // 将 accessToken 存储到 accessStore 中
+      accessStore.setAccessToken(access_token);
+      accessStore.setRefreshToken(access_token);
 
-        // 获取用户信息并存储到 accessStore 中
-        const [fetchUserInfoResult, accessCodes] = await Promise.all([
-          fetchUserInfo(),
-          getAccessCodesApi(),
-        ]);
+      // 获取用户信息并存储到 accessStore 中
+      userInfo = await fetchUserInfo();
+      /**
+       * 设置用户信息
+       */
+      userStore.setUserInfo(userInfo);
+      /**
+       * 在这里设置权限
+       */
+      accessStore.setAccessCodes(userInfo.permissions);
 
-        userInfo = fetchUserInfoResult;
+      if (accessStore.loginExpired) {
+        accessStore.setLoginExpired(false);
+      } else {
+        onSuccess
+          ? await onSuccess?.()
+          : await router.push(preferences.app.defaultHomePath);
+      }
 
-        userStore.setUserInfo(userInfo);
-        accessStore.setAccessCodes(accessCodes);
-
-        if (accessStore.loginExpired) {
-          accessStore.setLoginExpired(false);
-        } else {
-          onSuccess
-            ? await onSuccess?.()
-            : await router.push(
-                userInfo.homePath || preferences.app.defaultHomePath,
-              );
-        }
-
-        if (userInfo?.realName) {
-          notification.success({
-            description: `${$t('authentication.loginSuccessDesc')}:${userInfo?.realName}`,
-            duration: 3,
-            message: $t('authentication.loginSuccess'),
-          });
-        }
+      if (userInfo?.realName) {
+        notification.success({
+          description: `${$t('authentication.loginSuccessDesc')}:${userInfo?.realName}`,
+          duration: 3,
+          message: $t('authentication.loginSuccess'),
+        });
       }
     } finally {
       loginLoading.value = false;
@@ -98,8 +97,33 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function fetchUserInfo() {
-    const userInfo = await getUserInfoApi();
+ const backUserInfo = await getUserInfoApi();
+    /**
+     * 登录超时的情况
+     */
+    if (!backUserInfo) {
+      throw new Error('获取用户信息失败.');
+    }
+    const { permissions = [], roles = [], user } = backUserInfo;
+    /**
+     * 从后台user -> vben user转换
+     */
+    const userInfo: UserInfo = {
+      avatar: user.avatar ?? '',
+      permissions,
+      realName: user.nickName,
+      roles,
+      userId: user.userId,
+      username: user.userName,
+      email: user.email ?? '',
+    };
     userStore.setUserInfo(userInfo);
+    /**
+     * 需要重新加载字典
+     * 比如退出登录切换到其他租户
+     */
+    // const dictStore = useDictStore();
+    // dictStore.resetCache();
     return userInfo;
   }
 

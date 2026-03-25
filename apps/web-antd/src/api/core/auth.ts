@@ -1,5 +1,10 @@
-import { baseRequestClient, requestClient } from '#/api/request';
+import { useAppConfig } from '@vben/hooks';
 
+import { baseRequestClient, requestClient } from '#/api/request';
+const { clientId, sseEnable } = useAppConfig(
+  import.meta.env,
+  import.meta.env.PROD,
+);
 export namespace AuthApi {
   /** 登录接口参数 */
   export interface LoginParams {
@@ -9,7 +14,9 @@ export namespace AuthApi {
 
   /** 登录接口返回值 */
   export interface LoginResult {
-    accessToken: string;
+    access_token: string;
+    client_id: string;
+    expire_in: number;
   }
 
   export interface RefreshTokenResult {
@@ -22,7 +29,24 @@ export namespace AuthApi {
  * 登录
  */
 export async function loginApi(data: AuthApi.LoginParams) {
-  return requestClient.post<AuthApi.LoginResult>('/auth/login', data);
+  return requestClient.post<AuthApi.LoginResult>('/auth/login', { ...data, clientId },
+    {
+      encrypt: true,
+    },);
+}
+
+/**
+ * 关闭sse连接
+ * @returns void
+ */
+export function seeConnectionClose() {
+  /**
+   * 未开启sse 不需要处理
+   */
+  if (!sseEnable) {
+    return;
+  }
+  return requestClient.get('/resource/sse/close');
 }
 
 /**

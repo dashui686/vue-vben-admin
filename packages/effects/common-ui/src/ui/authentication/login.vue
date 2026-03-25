@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import type { Recordable } from '@vben/types';
 
 import type { VbenFormSchema } from '@vben-core/form-ui';
 
-import type { AuthenticationProps } from './types';
+import type { AuthenticationProps, LoginAndRegisterParams } from './types';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -43,7 +42,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  submit: [Recordable<any>];
+  submit: [LoginAndRegisterParams];
 }>();
 
 const [Form, formApi] = useVbenForm(
@@ -72,7 +71,9 @@ async function handleSubmit() {
       REMEMBER_ME_KEY,
       rememberMe.value ? values?.username : '',
     );
-    emit('submit', values);
+        // 加上认证类型
+    (values as any).grantType = 'password';
+    emit('submit', values as LoginAndRegisterParams);
   }
 }
 
