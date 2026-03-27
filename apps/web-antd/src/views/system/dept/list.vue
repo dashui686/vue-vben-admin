@@ -8,13 +8,13 @@ import type { SystemDeptApi } from '#/api/system/dept';
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
-import { Button, message } from 'ant-design-vue';
+import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteDept, getDeptList } from '#/api/system/dept';
+import { deleteDept, getDeptList, updateDept } from '#/api/system/dept';
 import { $t } from '#/locales';
 
-import { useColumns } from './data';
+import { useColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 
 const [FormModal, formModalApi] = useVbenModal({
@@ -24,7 +24,6 @@ const [FormModal, formModalApi] = useVbenModal({
 
 /**
  * 编辑部门
- * @param row
  */
 function onEdit(row: SystemDeptApi.SystemDept) {
   formModalApi.setData(row).open();
@@ -32,40 +31,49 @@ function onEdit(row: SystemDeptApi.SystemDept) {
 
 /**
  * 添加下级部门
- * @param row
  */
 function onAppend(row: SystemDeptApi.SystemDept) {
-  formModalApi.setData({ parentId: row.deptId }).open();
+  formModalApi.setData({ parentId: row.deptId, deptName: '' }).open();
 }
 
 /**
  * 创建新部门
  */
 function onCreate() {
-  formModalApi.setData(null).open();
+  formModalApi.setData({}).open();
 }
 
 /**
  * 删除部门
- * @param row
  */
 function onDelete(row: SystemDeptApi.SystemDept) {
-  const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting', [row.deptName]),
-    duration: 0,
-    key: 'action_process_msg',
+  deleteDept(row.deptId).then(() => {
+    refreshGrid();
   });
-  deleteDept(row.deptId)
-    .then(() => {
-      message.success({
-        content: $t('ui.actionMessage.deleteSuccess', [row.deptName]),
-        key: 'action_process_msg',
-      });
-      refreshGrid();
-    })
-    .catch(() => {
-      hideLoading();
+}
+
+/**
+ * 状态切换
+ */
+async function onStatusChange(
+  newStatus: string,
+  row: SystemDeptApi.SystemDept,
+) {
+  const statusText = newStatus === '0' ? '启用' : '停用';
+  return new Promise((resolve) => {
+    Modal.confirm({
+      title: '确认操作',
+      content: `确认要${statusText}部门"${row.deptName}"吗？`,
+      onOk: async () => {
+        await updateDept(row.deptId, { ...row, status: newStatus });
+        message.success(`${statusText}成功`);
+        resolve(true);
+      },
+      onCancel: () => {
+        resolve(false);
+      },
     });
+  });
 }
 
 /**
@@ -92,18 +100,26 @@ function onActionClick({
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({
-  gridEvents: {},
+  formOptions: {
+    schema: useGridFormSchema(),
+    submitOnChange: true,
+    submitOnEnter: true,
+  },
   gridOptions: {
-    columns: useColumns(onActionClick),
+    columns: useColumns(onActionClick, onStatusChange),
     height: 'auto',
     keepSource: true,
     pagerConfig: {
       enabled: false,
     },
+    rowConfig: {
+      keyField: 'deptId',
+    },
     proxyConfig: {
       ajax: {
-        query: async (_params) => {
-          return await getDeptList();
+        query: async (_params, formValues) => {
+          const list = await getDeptList(formValues);
+          return list;
         },
       },
     },
@@ -111,12 +127,14 @@ const [Grid, gridApi] = useVbenVxeGrid({
       custom: true,
       export: false,
       refresh: true,
+      search: true,
       zoom: true,
     },
     treeConfig: {
+      expandAll: true,
       parentField: 'parentId',
       rowField: 'deptId',
-      transform: false,
+      transform: true,
     },
   } as VxeTableGridOptions,
 });
@@ -127,16 +145,83 @@ const [Grid, gridApi] = useVbenVxeGrid({
 function refreshGrid() {
   gridApi.query();
 }
+
+/**
+ * 全部展开
+ */
+function expandAll() {
+  gridApi.grid.setAllTreeExpand(true);
+}
+
+/**
+ * 全部折叠
+ */
+function collapseAll() {
+  gridApi.grid.clearTreeExpand();
+}
+
+/**
+ * 保存排序
+ */
+async function saveOrder() {
+  const grid = gridApi.grid;
+  const tableData = grid.getTableData().fullData;
+  const orderList: Array<{ data: any; deptId: string }> = [];
+
+  // 遍历表格数据，收集排序信息
+  function collectOrder(data: any[]) {
+    data.forEach((item) => {
+      orderList.push({
+        deptId: item.deptId,
+        data: item,
+      });
+      if (item.children?.length) {
+        collectOrder(item.children);
+      }
+    });
+  }
+
+  collectOrder(tableData);
+
+  try {
+    // 批量更新排序 - 只传递必要字段
+    await Promise.all(
+      orderList.map((item) =>
+        updateDept(item.deptId, {
+          parentId: item.data.parentId,
+          deptName: item.data.deptName,
+          deptCategory: item.data.deptCategory,
+          orderNum: item.data.orderNum,
+          leader: item.data.leader,
+          phone: item.data.phone,
+          email: item.data.email,
+          status: item.data.status,
+        }),
+      ),
+    );
+    message.success('保存排序成功');
+    refreshGrid();
+  } catch (error) {
+    console.error('保存排序失败:', error);
+    message.error('保存排序失败');
+  }
+}
 </script>
+
 <template>
   <Page auto-content-height>
     <FormModal @success="refreshGrid" />
-    <Grid table-title="部门列表">
+    <Grid :table-title="$t('system.dept.list')">
       <template #toolbar-tools>
-        <Button type="primary" @click="onCreate">
-          <Plus class="size-5" />
-          {{ $t('ui.actionTitle.create', [$t('system.dept.name')]) }}
-        </Button>
+        <div class="flex items-center gap-2">
+          <Button type="primary" @click="onCreate">
+            <Plus class="size-5" />
+            {{ $t('ui.actionTitle.create', [$t('system.dept.name')]) }}
+          </Button>
+          <Button @click="saveOrder">保存排序</Button>
+          <Button @click="expandAll">展开</Button>
+          <Button @click="collapseAll">折叠</Button>
+        </div>
       </template>
     </Grid>
   </Page>

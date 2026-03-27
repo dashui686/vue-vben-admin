@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import type { DataNode } from 'ant-design-vue/es/tree';
-
 import type { Recordable } from '@vben/types';
 
 import type { SystemRoleApi } from '#/api/system/role';
@@ -8,13 +6,11 @@ import type { SystemRoleApi } from '#/api/system/role';
 import { computed, nextTick, ref } from 'vue';
 
 import { Tree, useVbenDrawer } from '@vben/common-ui';
-import { IconifyIcon } from '@vben/icons';
 
 import { Spin } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
-import { getMenuList } from '#/api/system/menu';
-import { createRole, updateRole, getRole } from '#/api/system/role';
+import { createRole, getMenuTreeselect, getRole, updateRole } from '#/api';
 import { $t } from '#/locales';
 
 import { useFormSchema } from '../data';
@@ -28,48 +24,55 @@ const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
 });
 
-const permissions = ref<DataNode[]>([]);
+const permissions = ref<any[]>([]);
+const defaultCheckedKeys = ref<string[]>([]);
 const loadingPermissions = ref(false);
 
-const id = ref<number>();
+const roleId = ref();
+
 const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {
     const { valid } = await formApi.validate();
     if (!valid) return;
+
+    // 使用 defaultCheckedKeys 获取选中的菜单 ID
+    const menuIds = defaultCheckedKeys.value;
+
     const values = await formApi.getValues();
+    values.menuIds = menuIds;
+
     drawerApi.lock();
-    (id.value ? updateRole(id.value, values) : createRole(values))
-      .then(() => {
-        emits('success');
-        drawerApi.close();
-      })
-      .catch(() => {
-        drawerApi.unlock();
-      });
+
+    try {
+      await (roleId.value
+        ? updateRole(roleId.value, values)
+        : createRole(values));
+      emits('success');
+      drawerApi.close();
+    } finally {
+      drawerApi.unlock();
+    }
   },
 
   async onOpenChange(isOpen) {
     if (isOpen) {
       const data = drawerApi.getData<SystemRoleApi.SystemRole>();
       formApi.resetForm();
-
-      if (data) {
-        formData.value = data;
-        id.value = data.id;
-        // 加载已分配菜单
-        await loadRoleMenu(data.id);
+      if (data.roleId) {
+        formData.value = await getRole(data.roleId);
+        roleId.value = data.roleId;
       } else {
-        id.value = undefined;
-        permissions.value = [];
+        roleId.value = undefined;
       }
-
-      if (permissions.value.length === 0) {
-        await loadPermissions();
-      }
+      await loadPermissions();
       // Wait for Vue to flush DOM updates (form fields mounted)
       await nextTick();
       if (data) {
         formApi.setValues(data);
+        // 设置已选中的菜单
+        if (data.menuIds && data.menuIds.length > 0) {
+          defaultCheckedKeys.value = data.menuIds.map(String);
+        }
       }
     }
   },
@@ -78,26 +81,15 @@ const [Drawer, drawerApi] = useVbenDrawer({
 async function loadPermissions() {
   loadingPermissions.value = true;
   try {
-    const res = await getMenuList();
-    permissions.value = res as unknown as DataNode[];
-  } finally {
-    loadingPermissions.value = false;
-  }
-}
-
-async function loadRoleMenu(roleId: number) {
-  loadingPermissions.value = true;
-  try {
-    const menuRes = await getMenuList();
-    const roleRes = await getRole(roleId);
-    permissions.value = menuRes as unknown as DataNode[];
+    const res = await getMenuTreeselect();
+    permissions.value = res;
   } finally {
     loadingPermissions.value = false;
   }
 }
 
 const getDrawerTitle = computed(() => {
-  return formData.value?.id
+  return formData.value?.roleId
     ? $t('common.edit', $t('system.role.name'))
     : $t('common.create', $t('system.role.name'));
 });
@@ -114,22 +106,22 @@ function getNodeClass(node: Recordable<any>) {
 <template>
   <Drawer :title="getDrawerTitle">
     <Form>
-      <template #permissions="slotProps">
+      <template #menuIds="slotProps">
         <Spin :spinning="loadingPermissions" wrapper-class-name="w-full">
           <Tree
             :tree-data="permissions"
+            checkable
             multiple
-            bordered
-            :default-expanded-level="2"
+            :default-expanded-level="0"
             :get-node-class="getNodeClass"
-            v-bind="slotProps"
             value-field="id"
-            label-field="meta.title"
-            icon-field="meta.icon"
+            label-field="label"
+            icon-field="icon"
+            v-bind="slotProps"
           >
             <template #node="{ value }">
-              <IconifyIcon v-if="value.meta.icon" :icon="value.meta.icon" />
-              {{ $t(value.meta.title) }}
+              <IconifyIcon v-if="value.icon" :icon="value.icon" />
+              {{ $t(value.label) }}
             </template>
           </Tree>
         </Spin>

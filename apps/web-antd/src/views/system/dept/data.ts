@@ -5,13 +5,42 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { SystemDeptApi } from '#/api/system/dept';
 
 import { z } from '#/adapter/form';
-import { getDeptList } from '#/api/system/dept';
+import { getDeptOptionSelect } from '#/api/system/dept';
 import { $t } from '#/locales';
 
 /**
- * 获取编辑表单的字段配置。如果没有使用多语言，可以直接export一个数组常量
+ * 搜索表单配置
  */
-export function useSchema(): VbenFormSchema[] {
+export function useGridFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      fieldName: 'deptName',
+      label: $t('system.dept.deptName'),
+      componentProps: {
+        placeholder: '请输入部门名称',
+      },
+    },
+    {
+      component: 'Select',
+      fieldName: 'status',
+      label: $t('system.dept.status'),
+      componentProps: {
+        allowClear: true,
+        placeholder: '请选择状态',
+        options: [
+          { label: $t('common.enabled'), value: '0' },
+          { label: $t('common.disabled'), value: '1' },
+        ],
+      },
+    },
+  ];
+}
+
+/**
+ * 获取编辑表单的字段配置
+ */
+export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
@@ -29,19 +58,52 @@ export function useSchema(): VbenFormSchema[] {
       component: 'ApiTreeSelect',
       componentProps: {
         allowClear: true,
-        api: getDeptList,
+        api: getDeptOptionSelect,
         class: 'w-full',
         labelField: 'deptName',
         valueField: 'deptId',
         childrenField: 'children',
+        placeholder: '请选择上级部门',
+        treeDefaultExpandAll: true,
       },
       fieldName: 'parentId',
+      defaultValue: '0',
       label: $t('system.dept.parentDept'),
     },
     {
       component: 'InputNumber',
       fieldName: 'orderNum',
       label: $t('system.dept.orderNum'),
+      componentProps: {
+        min: 0,
+        placeholder: '请输入显示顺序',
+      },
+      defaultValue: 0,
+    },
+    {
+      component: 'Input',
+      fieldName: 'leader',
+      label: $t('system.dept.leader'),
+      componentProps: {
+        placeholder: '请输入负责人',
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'phone',
+      label: $t('system.dept.phone'),
+      componentProps: {
+        placeholder: '请输入联系电话',
+      },
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入邮箱',
+        type: 'email',
+      },
+      fieldName: 'email',
+      label: $t('system.dept.email'),
     },
     {
       component: 'RadioGroup',
@@ -57,29 +119,20 @@ export function useSchema(): VbenFormSchema[] {
       fieldName: 'status',
       label: $t('system.dept.status'),
     },
-    {
-      component: 'Input',
-      fieldName: 'phone',
-      label: $t('system.dept.phone'),
-    },
-    {
-      component: 'Input',
-      componentProps: {
-        type: 'email',
-      },
-      fieldName: 'email',
-      label: $t('system.dept.email'),
-    },
   ];
 }
 
 /**
  * 获取表格列配置
- * @description 使用函数的形式返回列数据而不是直接export一个Array常量，是为了响应语言切换时重新翻译表头
  * @param onActionClick 表格操作按钮点击事件
+ * @param onStatusChange 状态变更回调
  */
 export function useColumns(
   onActionClick?: OnActionClickFn<SystemDeptApi.SystemDept>,
+  onStatusChange?: (
+    newStatus: any,
+    row: SystemDeptApi.SystemDept,
+  ) => PromiseLike<boolean | undefined>,
 ): VxeTableGridColumns<SystemDeptApi.SystemDept> {
   return [
     {
@@ -91,20 +144,25 @@ export function useColumns(
       width: 200,
     },
     {
-      field: 'deptId',
-      title: $t('system.dept.id'),
-      width: 100,
-    },
-    {
       field: 'orderNum',
       title: $t('system.dept.orderNum'),
       width: 100,
+      align: 'center',
+      cellRender: {
+        name: 'CellInputNumber',
+        attrs: {
+          align: 'center',
+          onChange: (val: null | number, row: SystemDeptApi.SystemDept) => {
+            // 值变化时更新
+            row.orderNum = val;
+          },
+        },
+      },
     },
     {
-      cellRender: { name: 'CellTag' },
-      field: 'status',
-      title: $t('system.dept.status'),
-      width: 100,
+      field: 'leader',
+      title: $t('system.dept.leader'),
+      width: 120,
     },
     {
       field: 'phone',
@@ -117,27 +175,40 @@ export function useColumns(
       width: 180,
     },
     {
+      cellRender: {
+        attrs: { beforeChange: onStatusChange },
+        name: onStatusChange ? 'CellSwitch' : 'CellTag',
+      },
+      field: 'status',
+      title: $t('system.dept.status'),
+      width: 100,
+    },
+    {
       field: 'createTime',
       title: $t('system.dept.createTime'),
       width: 180,
     },
     {
-      align: 'right',
+      align: 'center',
       cellRender: {
+        name: 'CellOperation',
         attrs: {
           nameField: 'deptName',
           nameTitle: $t('system.dept.name'),
           onClick: onActionClick,
         },
-        name: 'CellOperation',
         options: [
           {
-            code: 'append',
-            text: '新增下级',
+            code: 'edit',
+            text: $t('common.edit'),
           },
-          'edit', // 默认的编辑按钮
           {
-            code: 'delete', // 默认的删除按钮
+            code: 'append',
+            text: '新增',
+          },
+          {
+            code: 'delete',
+            text: $t('common.delete'),
             disabled: (row: SystemDeptApi.SystemDept) => {
               return !!(row.children && row.children.length > 0);
             },
@@ -149,7 +220,6 @@ export function useColumns(
       headerAlign: 'center',
       showOverflow: false,
       title: $t('system.dept.operation'),
-      width: 200,
     },
   ];
 }

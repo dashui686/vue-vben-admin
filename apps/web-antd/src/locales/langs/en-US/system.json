@@ -67,7 +67,7 @@
     "roleName": "Role Name",
     "roleKey": "Role Key",
     "roleSort": "Order",
-    "id": "Role ID",
+    "roleId": "Role ID",
     "status": "Status",
     "remark": "Remark",
     "createTime": "Creation Time",

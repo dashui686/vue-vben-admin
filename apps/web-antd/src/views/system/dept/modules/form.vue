@@ -8,28 +8,30 @@ import { useVbenModal } from '@vben/common-ui';
 import { Button } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
-import { createDept, updateDept } from '#/api/system/dept';
+import { createDept, getDept, updateDept } from '#/api/system/dept';
 import { $t } from '#/locales';
 
-import { useSchema } from '../data';
+import { useFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
-const formData = ref<SystemDeptApi.SystemDept>();
+
+const [Form, formApi] = useVbenForm({
+  layout: 'vertical',
+  schema: useFormSchema(),
+  showDefaultActions: false,
+});
+
+const deptId = ref<number | undefined>();
+
 const getTitle = computed(() => {
-  return formData.value?.deptId
+  const values = formApi.form?.values;
+  return values?.deptId
     ? $t('ui.actionTitle.edit', [$t('system.dept.name')])
     : $t('ui.actionTitle.create', [$t('system.dept.name')]);
 });
 
-const [Form, formApi] = useVbenForm({
-  layout: 'vertical',
-  schema: useSchema(),
-  showDefaultActions: false,
-});
-
 function resetForm() {
   formApi.resetForm();
-  formApi.setValues(formData.value || {});
 }
 
 const [Modal, modalApi] = useVbenModal({
@@ -39,8 +41,8 @@ const [Modal, modalApi] = useVbenModal({
       modalApi.lock();
       const data = await formApi.getValues();
       try {
-        await (formData.value?.deptId
-          ? updateDept(formData.value.deptId, data)
+        await (deptId.value
+          ? updateDept(deptId.value, data)
           : createDept(data));
         modalApi.close();
         emit('success');
@@ -49,15 +51,19 @@ const [Modal, modalApi] = useVbenModal({
       }
     }
   },
-  onOpenChange(isOpen) {
+  async onOpenChange(isOpen) {
     if (isOpen) {
       const data = modalApi.getData<SystemDeptApi.SystemDept>();
-      if (data) {
-        if (data.parentId === 0) {
-          data.parentId = undefined;
-        }
-        formData.value = data;
-        formApi.setValues(formData.value);
+      formApi.resetForm();
+
+      if (data?.deptId) {
+        // 编辑模式：获取完整数据
+        const deptData = await getDept(data.deptId);
+        deptId.value = deptData.deptId;
+        formApi.setValues(deptData);
+      } else {
+        // 新增模式
+        formApi.setValues(data || {});
       }
     }
   },

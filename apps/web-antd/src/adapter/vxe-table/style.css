@@ -1,0 +1,28 @@
+/* CellInputNumber 对齐样式 */
+.cell-input-align-center .ant-input-number,
+.cell-input-align-center .ant-input-number-input {
+  text-align: center;
+}
+
+.cell-input-align-left .ant-input-number,
+.cell-input-align-left .ant-input-number-input {
+  text-align: left;
+}
+
+.cell-input-align-right .ant-input-number,
+.cell-input-align-right .ant-input-number-input {
+  text-align: right;
+}
+
+/* CellInput 对齐样式 */
+.cell-input-align-center .ant-input {
+  text-align: center;
+}
+
+.cell-input-align-left .ant-input {
+  text-align: left;
+}
+
+.cell-input-align-right .ant-input {
+  text-align: right;
+}

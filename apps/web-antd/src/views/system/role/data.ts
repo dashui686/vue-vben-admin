@@ -22,6 +22,7 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'InputNumber',
       fieldName: 'roleSort',
       label: $t('system.role.roleSort'),
+      rules: 'required',
     },
     {
       component: 'RadioGroup',
@@ -33,7 +34,7 @@ export function useFormSchema(): VbenFormSchema[] {
         ],
         optionType: 'button',
       },
-      defaultValue: '0',
+      defaultValue: '1',
       fieldName: 'status',
       label: $t('system.role.status'),
     },
@@ -41,6 +42,13 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'Textarea',
       fieldName: 'remark',
       label: $t('system.role.remark'),
+    },
+    {
+      component: 'Input',
+      fieldName: 'menuIds',
+      formItemClass: 'items-start',
+      label: $t('system.role.setPermissions'),
+      modelPropName: 'modelValue',
     },
   ];
 }
@@ -51,11 +59,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
       component: 'Input',
       fieldName: 'roleName',
       label: $t('system.role.roleName'),
-    },
-    {
-      component: 'Input',
-      fieldName: 'id',
-      label: $t('system.role.id'),
     },
     {
       component: 'Select',
@@ -93,19 +96,14 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
       width: 200,
     },
     {
-      field: 'id',
-      title: $t('system.role.id'),
-      width: 100,
-    },
-    {
       field: 'roleKey',
       title: $t('system.role.roleKey'),
-      width: 150,
+      width: 200,
     },
     {
       field: 'roleSort',
       title: $t('system.role.roleSort'),
-      width: 100,
+      width: 200,
     },
     {
       cellRender: {
@@ -127,19 +125,30 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
       width: 200,
     },
     {
-      align: 'center',
-      cellRender: {
-        attrs: {
-          nameField: 'roleName',
-          nameTitle: $t('system.role.name'),
-          onClick: onActionClick,
-        },
-        name: 'CellOperation',
-      },
+      align: 'right',
       field: 'operation',
       fixed: 'right',
+      headerAlign: 'center',
+      showOverflow: false,
       title: $t('system.role.operation'),
-      width: 130,
+      width: 180,
+      cellRender: {
+        name: 'CellOperation',
+        attrs: {
+          onClick: onActionClick,
+          nameField: 'roleName',
+          maxInline: 2, // 最多显示2个内联按钮，其余放入"更多"
+        },
+        options: [
+          { code: 'edit', text: $t('common.edit') },
+          { code: 'delete', text: $t('common.delete') },
+          {
+            code: 'allocateDataScope',
+            text: $t('system.role.allocateDataScope'),
+          },
+          { code: 'allocateUser', text: $t('system.role.allocateUser') },
+        ],
+      },
     },
   ];
 }

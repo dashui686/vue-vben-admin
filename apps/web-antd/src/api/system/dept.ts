@@ -53,7 +53,7 @@ export namespace SystemDeptApi {
 /**
  * 获取部门列表数据
  */
-async function getDeptList(params?: SystemDeptApi.SystemDeptPageQuery) {
+export async function getDeptList(params?: SystemDeptApi.SystemDeptPageQuery) {
   return requestClient.get<Array<SystemDeptApi.SystemDept>>(
     '/system/dept/list',
     { params },
@@ -64,39 +64,63 @@ async function getDeptList(params?: SystemDeptApi.SystemDeptPageQuery) {
  * 获取部门详情
  * @param deptId 部门ID
  */
-async function getDept(deptId: number) {
+export async function getDept(deptId: number) {
   return requestClient.get<SystemDeptApi.SystemDept>(`/system/dept/${deptId}`);
+}
+
+/**
+ * 获取部门选择框列表（树形）
+ */
+export async function getDeptOptionSelect() {
+  return requestClient.get<Array<SystemDeptApi.SystemDept>>(
+    '/system/dept/optionselect',
+  );
 }
 
 /**
  * 创建部门
  * @param data 部门数据
  */
-async function createDept(
-  data: Omit<SystemDeptApi.SystemDept, 'deptId' | 'children' | 'parentName' | 'ancestors' | 'leaderName' | 'createTime'>,
+export async function createDept(
+  data: Omit<
+    SystemDeptApi.SystemDept,
+    | 'ancestors'
+    | 'children'
+    | 'createTime'
+    | 'deptId'
+    | 'leaderName'
+    | 'parentName'
+  >,
 ) {
-  return requestClient.post('/system/dept', data);
+  return requestClient.postWithMsg('/system/dept', data);
 }
 
 /**
  * 更新部门
  *
  * @param deptId 部门 ID
- * @param data 部门数据
+ * @param data 部门数据（包含 deptId）
  */
-async function updateDept(
+export async function updateDept(
   deptId: number,
-  data: Omit<SystemDeptApi.SystemDept, 'deptId' | 'children' | 'parentName' | 'ancestors' | 'leaderName' | 'createTime'>,
+  data: Omit<
+    SystemDeptApi.SystemDept,
+    | 'ancestors'
+    | 'children'
+    | 'createTime'
+    | 'deptId'
+    | 'leaderName'
+    | 'parentName'
+  >,
 ) {
-  return requestClient.put(`/system/dept/${deptId}`, data);
+  data.deptId = deptId;
+  return requestClient.putWithMsg('/system/dept', data);
 }
 
 /**
  * 删除部门
  * @param deptId 部门 ID
  */
-async function deleteDept(deptId: number) {
-  return requestClient.delete(`/system/dept/${deptId}`);
+export async function deleteDept(deptId: number) {
+  return requestClient.deleteWithMsg(`/system/dept/${deptId}`);
 }
-
-export { createDept, deleteDept, getDept, getDeptList, updateDept };

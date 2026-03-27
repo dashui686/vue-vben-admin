@@ -22,6 +22,17 @@ const routes: RouteRecordRaw[] = [
         component: () => import('#/views/system/role/list.vue'),
       },
       {
+        path: '/system/role/allocate-user/:roleId',
+        name: 'SystemRoleAllocateUser',
+        meta: {
+          hideInMenu: true,
+          // hideInTab: true,
+          // hideInBreadcrumb: true,
+          title: '分配用户',
+        },
+        component: () => import('#/views/system/role/allocate-user.vue'),
+      },
+      {
         path: '/system/menu',
         name: 'SystemMenu',
         meta: {
