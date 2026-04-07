@@ -1,6 +1,13 @@
 import type { Recordable } from '@vben/types';
 
+import type { BackendMenu, FrontendMenu } from '#/views/system/menu/types';
+
 import { requestClient } from '#/api/request';
+import {
+  toBackendMenu,
+  toFrontendMenu,
+  toFrontendMenuList,
+} from '#/views/system/menu/transform';
 
 export namespace SystemMenuApi {
   /** 徽标颜色集合 */
@@ -32,17 +39,32 @@ export namespace SystemMenuApi {
   /** 是否缓存（0缓存 1不缓存） */
   export const CacheTypes = ['0', '1'] as const;
 
-  /** 系统菜单 */
+  /**
+   * 系统菜单（兼容前端和后端格式）
+   * 用于菜单编辑表单
+   */
   export interface SystemMenu {
     [key: string]: any;
-    /** 后端权限标识 */
-    authCode: string;
+
+    // ========== 前端格式字段 ==========
+    /** 菜单ID */
+    id?: string;
+    /** 父级ID */
+    pid?: string;
+    /** 路由名称 */
+    name?: string;
+    /** 路由路径 */
+    path?: string;
+    /** 组件路径 */
+    component?: string;
+    /** 重定向地址 */
+    redirect?: string;
+    /** 菜单类型 */
+    type?: (typeof MenuTypes)[number];
+    /** 权限标识 */
+    authCode?: string;
     /** 子级 */
     children?: SystemMenu[];
-    /** 组件 */
-    component?: string;
-    /** 菜单ID */
-    id: string;
     /** 菜单元数据 */
     meta?: {
       /** 激活时显示的图标 */
@@ -53,7 +75,7 @@ export namespace SystemMenuApi {
       affixTab?: boolean;
       /** 在标签栏固定的顺序 */
       affixTabOrder?: number;
-      /** 徽标内容(当徽标类型为normal时有效) */
+      /** 徽标内容 */
       badge?: string;
       /** 徽标类型 */
       badgeType?: (typeof BadgeTypes)[number];
@@ -77,10 +99,6 @@ export namespace SystemMenuApi {
       link?: string;
       /** 同一个路由最大打开的标签数 */
       maxNumOfOpenTab?: number;
-      /** 无需基础布局 */
-      noBasicLayout?: boolean;
-      /** 是否在新窗口打开 */
-      openInNewWindow?: boolean;
       /** 菜单排序 */
       order?: number;
       /** 额外的路由参数 */
@@ -88,16 +106,6 @@ export namespace SystemMenuApi {
       /** 菜单标题 */
       title?: string;
     };
-    /** 菜单名称 */
-    name: string;
-    /** 路由路径 */
-    path: string;
-    /** 父级ID */
-    pid: string;
-    /** 重定向 */
-    redirect?: string;
-    /** 菜单类型 */
-    type: (typeof MenuTypes)[number];
 
     // ========== 后端API字段 ==========
     /** 菜单ID(后端) */
@@ -122,6 +130,36 @@ export namespace SystemMenuApi {
     status?: string;
     /** 权限标识(后端) */
     perms?: string;
+    /** 菜单图标(后端) */
+    icon?: string;
+
+    // ========== 后端扩展字段 ==========
+    /** 菜单标题(多语言key) */
+    title?: string;
+    /** 激活图标 */
+    activeIcon?: string;
+    /** 激活路径 */
+    activePath?: string;
+    /** 是否固定标签页（0否 1是） */
+    affixTab?: number;
+    /** 固定标签页顺序 */
+    affixTabOrder?: number;
+    /** 徽标内容 */
+    badge?: string;
+    /** 徽标类型 */
+    badgeType?: 'dot' | 'normal';
+    /** 徽标颜色 */
+    badgeVariants?: string;
+    /** 是否隐藏子菜单（0否 1是） */
+    hideChildren?: number;
+    /** 是否在面包屑中隐藏（0否 1是） */
+    hideBreadcrumb?: number;
+    /** 是否在标签栏中隐藏（0否 1是） */
+    hideTab?: number;
+    /** 外链/内嵌地址 */
+    linkSrc?: string;
+    /** 最大打开标签数 */
+    maxOpenTab?: number;
   }
 
   /** 菜单查询参数 */
@@ -153,10 +191,11 @@ export namespace SystemMenuApi {
  * 获取菜单数据列表
  */
 async function getMenuList(params?: SystemMenuApi.SystemMenuPageQuery) {
-  return requestClient.get<Array<SystemMenuApi.SystemMenu>>(
+  const data = await requestClient.get<Array<BackendMenu>>(
     '/system/menu/list',
     { params },
   );
+  return toFrontendMenuList(data);
 }
 
 /**
@@ -193,48 +232,26 @@ async function getRouters() {
  * @param menuId 菜单ID
  */
 async function getMenu(menuId: number) {
-  return requestClient.get<SystemMenuApi.SystemMenu>(`/system/menu/${menuId}`);
-}
-
-async function isMenuNameExists(
-  name: string,
-  id?: string,
-) {
-  return requestClient.get<boolean>('/system/menu/name-exists', {
-    params: { id, name },
-  });
-}
-
-async function isMenuPathExists(
-  path: string,
-  id?: string,
-) {
-  return requestClient.get<boolean>('/system/menu/path-exists', {
-    params: { id, path },
-  });
+  const data = await requestClient.get<BackendMenu>(`/system/menu/${menuId}`);
+  return toFrontendMenu(data);
 }
 
 /**
  * 创建菜单
  * @param data 菜单数据
  */
-async function createMenu(
-  data: Omit<SystemMenuApi.SystemMenu, 'children' | 'id'>,
-) {
-  return requestClient.post('/system/menu', data);
+async function createMenu(data: FrontendMenu) {
+  const backendData = toBackendMenu(data);
+  return requestClient.post('/system/menu', backendData);
 }
 
 /**
  * 更新菜单
- *
- * @param id 菜单 ID
  * @param data 菜单数据
  */
-async function updateMenu(
-  id: string,
-  data: Omit<SystemMenuApi.SystemMenu, 'children' | 'id'>,
-) {
-  return requestClient.put(`/system/menu/${id}`, data);
+async function updateMenu(data: FrontendMenu) {
+  const backendData = toBackendMenu(data);
+  return requestClient.put('/system/menu', backendData);
 }
 
 /**
@@ -251,9 +268,7 @@ export {
   getMenu,
   getMenuList,
   getMenuTreeselect,
-  getRouters,
   getRoleMenuTreeselect,
-  isMenuNameExists,
-  isMenuPathExists,
+  getRouters,
   updateMenu,
 };

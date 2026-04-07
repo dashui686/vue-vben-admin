@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { FrontendMenu } from './types';
+
 import type {
   OnActionClickParams,
   VxeTableGridOptions,
@@ -13,30 +15,10 @@ import { MenuBadge } from '@vben-core/menu-ui';
 import { Button, message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteMenu, getMenuList, SystemMenuApi } from '#/api/system/menu';
+import { deleteMenu, getMenuList } from '#/api/system/menu';
 
 import { useColumns } from './data';
 import Form from './modules/form.vue';
-
-// 获取菜单ID(兼容前后端字段)
-function getMenuId(row: SystemMenuApi.SystemMenu) {
-  return row.menuId ?? row.id;
-}
-
-// 获取父菜单ID(兼容前后端字段)
-function getParentId(row: SystemMenuApi.SystemMenu) {
-  return row.parentId ?? row.pid;
-}
-
-// 获取菜单名称(兼容前后端字段)
-function getMenuName(row: SystemMenuApi.SystemMenu) {
-  return row.menuName || row.name || '';
-}
-
-// 获取菜单类型(兼容前后端字段)
-function getMenuType(row: SystemMenuApi.SystemMenu) {
-  return row.menuType || row.type || '';
-}
 
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Form,
@@ -59,7 +41,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: {
-      keyField: 'menuId',
+      keyField: 'id',
     },
     toolbarConfig: {
       custom: true,
@@ -68,17 +50,14 @@ const [Grid, gridApi] = useVbenVxeGrid({
       zoom: true,
     },
     treeConfig: {
-      parentField: 'parentId',
-      rowField: 'menuId',
-      transform: false,
+      parentField: 'pid',
+      rowField: 'id',
+      transform: true,
     },
-  } as VxeTableGridOptions,
+  } as VxeTableGridOptions<FrontendMenu>,
 });
 
-function onActionClick({
-  code,
-  row,
-}: OnActionClickParams<SystemMenuApi.SystemMenu>) {
+function onActionClick({ code, row }: OnActionClickParams<FrontendMenu>) {
   switch (code) {
     case 'append': {
       onAppend(row);
@@ -101,26 +80,29 @@ function onActionClick({
 function onRefresh() {
   gridApi.query();
 }
-function onEdit(row: SystemMenuApi.SystemMenu) {
+
+function onEdit(row: FrontendMenu) {
   formDrawerApi.setData(row).open();
 }
+
 function onCreate() {
   formDrawerApi.setData({}).open();
 }
-function onAppend(row: SystemMenuApi.SystemMenu) {
-  formDrawerApi.setData({ parentId: getMenuId(row) }).open();
+
+function onAppend(row: FrontendMenu) {
+  formDrawerApi.setData({ pid: row.id }).open();
 }
 
-function onDelete(row: SystemMenuApi.SystemMenu) {
+function onDelete(row: FrontendMenu) {
   const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting', [getMenuName(row)]),
+    content: $t('ui.actionMessage.deleting', [row.name]),
     duration: 0,
     key: 'action_process_msg',
   });
-  deleteMenu(getMenuId(row) as unknown as string)
+  deleteMenu(row.id)
     .then(() => {
       message.success({
-        content: $t('ui.actionMessage.deleteSuccess', [getMenuName(row)]),
+        content: $t('ui.actionMessage.deleteSuccess', [row.name]),
         key: 'action_process_msg',
       });
       onRefresh();
@@ -144,18 +126,17 @@ function onDelete(row: SystemMenuApi.SystemMenu) {
         <div class="flex w-full items-center gap-1">
           <div class="size-5 shrink-0">
             <IconifyIcon
-              v-if="getMenuType(row) === 'F' || row.type === 'button'"
+              v-if="row.type === 'button'"
               icon="carbon:security"
               class="size-full"
             />
             <IconifyIcon
-              v-else-if="row.meta?.icon || row.icon"
-              :icon="row.meta?.icon || row.icon || 'carbon:circle-dash'"
+              v-else-if="row.meta?.icon"
+              :icon="row.meta.icon"
               class="size-full"
             />
           </div>
-          <span class="flex-auto">{{ $t(row.meta?.title || row.menuName || row.name) }}</span>
-          <div class="items-center justify-end"></div>
+          <span class="flex-auto">{{ $t(row.meta?.title || row.name) }}</span>
         </div>
         <MenuBadge
           v-if="row.meta?.badgeType"

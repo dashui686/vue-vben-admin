@@ -16,9 +16,10 @@
   },
   "menu": {
     "title": "Menu Management",
+    "appendChild": "Add Child",
     "parent": "Parent Menu",
     "menuTitle": "Title",
-    "menuName": "Menu Name",
+    "menuName": "Route Name",
     "name": "Menu",
     "type": "Type",
     "typeCatalog": "Catalog",
@@ -52,11 +53,14 @@
       "none": "None"
     },
     "badgeVariants": "Badge Style",
-    "orderNum": "Order",
+    "orderNum": "Display Order",
+    "orderNumHelp": "The display order of the menu, smaller values appear first",
     "visible": "Visible",
     "isFrame": "Is Frame",
     "isCache": "Is Cache",
     "queryParam": "Query Param",
+    "queryParamHelp": "Default query parameters for the route in JSON format",
+    "badgeSettings": "Badge Settings",
     "perms": "Permission",
     "parentId": "Parent Menu"
   },

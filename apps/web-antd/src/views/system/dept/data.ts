@@ -152,7 +152,7 @@ export function useColumns(
         name: 'CellInputNumber',
         attrs: {
           align: 'center',
-          onChange: (val: null | number, row: SystemDeptApi.SystemDept) => {
+          onChange: (val: number, row: SystemDeptApi.SystemDept) => {
             // 值变化时更新
             row.orderNum = val;
           },

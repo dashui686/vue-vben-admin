@@ -1,20 +1,25 @@
+import type { FrontendMenu } from './types';
+
 import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
-import type { SystemMenuApi } from '#/api/system/menu';
 
 import { $t } from '#/locales';
 
+/**
+ * 菜单类型选项（前端格式）
+ */
 export function getMenuTypeOptions() {
   return [
-    {
-      color: 'processing',
-      label: $t('system.menu.typeCatalog'),
-      value: 'M',
-    },
-    { color: 'default', label: $t('system.menu.typeMenu'), value: 'C' },
-    { color: 'error', label: $t('system.menu.typeButton'), value: 'F' },
+    { color: 'processing', label: $t('system.menu.typeCatalog'), value: 'catalog' },
+    { color: 'default', label: $t('system.menu.typeMenu'), value: 'menu' },
+    { color: 'warning', label: $t('system.menu.typeLink'), value: 'link' },
+    { color: 'success', label: $t('system.menu.typeEmbedded'), value: 'embedded' },
+    { color: 'error', label: $t('system.menu.typeButton'), value: 'button' },
   ];
 }
 
+/**
+ * 状态选项
+ */
 export function getStatusOptions() {
   return [
     { color: 'success', label: $t('common.enabled'), value: '0' },
@@ -22,44 +27,16 @@ export function getStatusOptions() {
   ];
 }
 
-export function getVisibleOptions() {
-  return [
-    { color: 'success', label: $t('common.show'), value: '0' },
-    { color: 'error', label: $t('common.hide'), value: '1' },
-  ];
-}
-
-export function getFrameOptions() {
-  return [
-    { label: $t('common.yes'), value: '0' },
-    { label: $t('common.no'), value: '1' },
-  ];
-}
-
-export function getCacheOptions() {
-  return [
-    { label: $t('common.cache'), value: '0' },
-    { label: $t('common.noCache'), value: '1' },
-  ];
-}
-
-// 获取菜单标题(兼容前后端字段)
-function getMenuTitle(row: SystemMenuApi.SystemMenu) {
-  return row.meta?.title || row.menuName || row.name || '';
-}
-
-// 获取菜单类型(兼容前后端字段)
-function getMenuType(row: SystemMenuApi.SystemMenu) {
-  return row.menuType || row.type || '';
-}
-
+/**
+ * 列定义
+ */
 export function useColumns(
-  onActionClick: OnActionClickFn<SystemMenuApi.SystemMenu>,
-): VxeTableGridColumns<SystemMenuApi.SystemMenu> {
+  onActionClick: OnActionClickFn<FrontendMenu>,
+): VxeTableGridColumns<FrontendMenu> {
   return [
     {
       align: 'left',
-      field: 'menuName',
+      field: 'name',
       fixed: 'left',
       slots: { default: 'title' },
       title: $t('system.menu.menuTitle'),
@@ -69,12 +46,12 @@ export function useColumns(
     {
       align: 'center',
       cellRender: { name: 'CellTag', options: getMenuTypeOptions() },
-      field: 'menuType',
+      field: 'type',
       title: $t('system.menu.type'),
       width: 100,
     },
     {
-      field: 'perms',
+      field: 'authCode',
       title: $t('system.menu.authCode'),
       width: 200,
     },
@@ -84,25 +61,13 @@ export function useColumns(
       title: $t('system.menu.path'),
       width: 200,
     },
-
     {
       align: 'left',
       field: 'component',
       formatter: ({ row }) => {
-        const menuType = getMenuType(row);
-        switch (menuType) {
-          case 'M':
-          case 'catalog': {
-            return row.component ?? '';
-          }
-          case 'C':
-          case 'menu': {
-            return row.component ?? '';
-          }
-          case 'F':
-          case 'button': {
-            return '';
-          }
+        // 按钮类型不显示组件
+        if (row.type === 'button') {
+          return '';
         }
         return row.component ?? '';
       },
@@ -110,9 +75,9 @@ export function useColumns(
       title: $t('system.menu.component'),
     },
     {
-      field: 'orderNum',
+      field: 'meta.order',
       title: $t('system.menu.orderNum'),
-      width: 100,
+      width: 80,
     },
     {
       cellRender: { name: 'CellTag', options: getStatusOptions() },
@@ -120,22 +85,18 @@ export function useColumns(
       title: $t('system.menu.status'),
       width: 100,
     },
-
     {
       align: 'right',
       cellRender: {
         attrs: {
-          nameField: 'menuName',
+          nameField: 'name',
           onClick: onActionClick,
         },
         name: 'CellOperation',
         options: [
-          {
-            code: 'append',
-            text: '新增下级',
-          },
-          'edit', // 默认的编辑按钮
-          'delete', // 默认的删除按钮
+          { code: 'append', text: $t('system.menu.appendChild') },
+          'edit',
+          'delete',
         ],
       },
       field: 'operation',

@@ -18,8 +18,6 @@ import { useVbenForm, z } from '#/adapter/form';
 import {
   createMenu,
   getMenuList,
-  isMenuNameExists,
-  isMenuPathExists,
   SystemMenuApi,
   updateMenu,
 } from '#/api/system/menu';
@@ -27,45 +25,23 @@ import { $t } from '#/locales';
 import { componentKeys } from '#/router/routes';
 
 import { getMenuTypeOptions } from '../data';
+import type { FrontendMenu } from '../types';
 
 const emit = defineEmits<{
   success: [];
 }>();
+
+// 用于保存当前编辑的菜单ID，判断是新增还是修改
+let currentId: string | undefined;
 const formData = ref<SystemMenuApi.SystemMenu>();
 const titleSuffix = ref<string>();
+
+/**
+ * 菜单表单Schema
+ * 参考 RuoYi-Vue 原有字段结构，保留原有字段并增加前端扩展字段
+ */
 const schema: VbenFormSchema[] = [
-  {
-    component: 'RadioGroup',
-    componentProps: {
-      buttonStyle: 'solid',
-      options: getMenuTypeOptions(),
-      optionType: 'button',
-    },
-    defaultValue: 'menu',
-    fieldName: 'type',
-    formItemClass: 'col-span-2 md:col-span-2',
-    label: $t('system.menu.type'),
-  },
-  {
-    component: 'Input',
-    fieldName: 'name',
-    label: $t('system.menu.menuName'),
-    rules: z
-      .string()
-      .min(2, $t('ui.formRules.minLength', [$t('system.menu.menuName'), 2]))
-      .max(30, $t('ui.formRules.maxLength', [$t('system.menu.menuName'), 30]))
-      .refine(
-        async (value: string) => {
-          return !(await isMenuNameExists(value, formData.value?.id));
-        },
-        (value) => ({
-          message: $t('ui.formRules.alreadyExists', [
-            $t('system.menu.menuName'),
-            value,
-          ]),
-        }),
-      ),
-  },
+  // ========== 基础信息 ==========
   {
     component: 'ApiTreeSelect',
     componentProps: {
@@ -103,9 +79,39 @@ const schema: VbenFormSchema[] = [
     },
   },
   {
+    component: 'RadioGroup',
+    componentProps: {
+      buttonStyle: 'solid',
+      options: getMenuTypeOptions(),
+      optionType: 'button',
+    },
+    defaultValue: 'menu',
+    fieldName: 'type',
+    formItemClass: 'col-span-2 md:col-span-2',
+    label: $t('system.menu.type'),
+  },
+  {
+    component: 'Input',
+    fieldName: 'name',
+    label: $t('system.menu.menuName'),
+    rules: z
+      .string()
+      .min(2, $t('ui.formRules.minLength', [$t('system.menu.menuName'), 2]))
+      .max(30, $t('ui.formRules.maxLength', [$t('system.menu.menuName'), 30])),
+  },
+  {
+    component: 'InputNumber',
+    componentProps: {
+      min: 0,
+      style: { width: '100%' },
+    },
+    defaultValue: 0,
+    fieldName: 'meta.order',
+    label: $t('system.menu.orderNum'),
+  },
+  {
     component: 'Input',
     componentProps() {
-      // 不需要处理多语言时就无需这么做
       return {
         ...(titleSuffix.value && { addonAfter: titleSuffix.value }),
         onChange({ target: { value } }: ChangeEvent) {
@@ -117,6 +123,21 @@ const schema: VbenFormSchema[] = [
     label: $t('system.menu.menuTitle'),
     rules: 'required',
   },
+  {
+    component: 'IconPicker',
+    componentProps: {
+      prefix: 'carbon',
+    },
+    dependencies: {
+      show: (values) => {
+        return ['catalog', 'embedded', 'link', 'menu'].includes(values.type);
+      },
+      triggerFields: ['type'],
+    },
+    fieldName: 'meta.icon',
+    label: $t('system.menu.icon'),
+  },
+  // ========== 路由配置 ==========
   {
     component: 'Input',
     dependencies: {
@@ -136,72 +157,19 @@ const schema: VbenFormSchema[] = [
           return value.startsWith('/');
         },
         $t('ui.formRules.startWith', [$t('system.menu.path'), '/']),
-      )
-      .refine(
-        async (value: string) => {
-          return !(await isMenuPathExists(value, formData.value?.id));
-        },
-        (value) => ({
-          message: $t('ui.formRules.alreadyExists', [
-            $t('system.menu.path'),
-            value,
-          ]),
-        }),
       ),
   },
   {
     component: 'Input',
     dependencies: {
       show: (values) => {
-        return ['embedded', 'menu'].includes(values.type);
+        return ['embedded', 'link'].includes(values.type);
       },
       triggerFields: ['type'],
     },
-    fieldName: 'activePath',
-    help: $t('system.menu.activePathHelp'),
-    label: $t('system.menu.activePath'),
-    rules: z
-      .string()
-      .min(2, $t('ui.formRules.minLength', [$t('system.menu.path'), 2]))
-      .max(100, $t('ui.formRules.maxLength', [$t('system.menu.path'), 100]))
-      .refine(
-        (value: string) => {
-          return value.startsWith('/');
-        },
-        $t('ui.formRules.startWith', [$t('system.menu.path'), '/']),
-      )
-      .refine(async (value: string) => {
-        return await isMenuPathExists(value, formData.value?.id);
-      }, $t('system.menu.activePathMustExist'))
-      .optional(),
-  },
-  {
-    component: 'IconPicker',
-    componentProps: {
-      prefix: 'carbon',
-    },
-    dependencies: {
-      show: (values) => {
-        return ['catalog', 'embedded', 'link', 'menu'].includes(values.type);
-      },
-      triggerFields: ['type'],
-    },
-    fieldName: 'meta.icon',
-    label: $t('system.menu.icon'),
-  },
-  {
-    component: 'IconPicker',
-    componentProps: {
-      prefix: 'carbon',
-    },
-    dependencies: {
-      show: (values) => {
-        return ['catalog', 'embedded', 'menu'].includes(values.type);
-      },
-      triggerFields: ['type'],
-    },
-    fieldName: 'meta.activeIcon',
-    label: $t('system.menu.activeIcon'),
+    fieldName: 'linkSrc',
+    label: $t('system.menu.linkSrc'),
+    rules: z.string().url($t('ui.formRules.invalidURL')),
   },
   {
     component: 'AutoComplete',
@@ -229,14 +197,38 @@ const schema: VbenFormSchema[] = [
     component: 'Input',
     dependencies: {
       show: (values) => {
-        return ['embedded', 'link'].includes(values.type);
+        return ['catalog', 'embedded', 'menu'].includes(values.type);
       },
       triggerFields: ['type'],
     },
-    fieldName: 'linkSrc',
-    label: $t('system.menu.linkSrc'),
-    rules: z.string().url($t('ui.formRules.invalidURL')),
+    fieldName: 'meta.query',
+    help: $t('system.menu.queryParamHelp'),
+    label: $t('system.menu.queryParam'),
   },
+  {
+    component: 'Input',
+    dependencies: {
+      show: (values) => {
+        return ['embedded', 'menu'].includes(values.type);
+      },
+      triggerFields: ['type'],
+    },
+    fieldName: 'meta.activePath',
+    help: $t('system.menu.activePathHelp'),
+    label: $t('system.menu.activePath'),
+    rules: z
+      .string()
+      .min(2, $t('ui.formRules.minLength', [$t('system.menu.path'), 2]))
+      .max(100, $t('ui.formRules.maxLength', [$t('system.menu.path'), 100]))
+      .refine(
+        (value: string) => {
+          return value.startsWith('/');
+        },
+        $t('ui.formRules.startWith', [$t('system.menu.path'), '/']),
+      )
+      .optional(),
+  },
+  // ========== 权限配置 ==========
   {
     component: 'Input',
     dependencies: {
@@ -251,19 +243,58 @@ const schema: VbenFormSchema[] = [
     fieldName: 'authCode',
     label: $t('system.menu.authCode'),
   },
+  // ========== 状态配置 ==========
   {
     component: 'RadioGroup',
     componentProps: {
       buttonStyle: 'solid',
       options: [
-        { label: $t('common.enabled'), value: 1 },
-        { label: $t('common.disabled'), value: 0 },
+        { label: $t('common.show'), value: false },
+        { label: $t('common.hide'), value: true },
       ],
       optionType: 'button',
     },
-    defaultValue: 1,
+    defaultValue: false,
+    dependencies: {
+      show: (values) => {
+        return !['button'].includes(values.type);
+      },
+      triggerFields: ['type'],
+    },
+    fieldName: 'meta.hideInMenu',
+    label: $t('system.menu.visible'),
+  },
+  {
+    component: 'RadioGroup',
+    componentProps: {
+      buttonStyle: 'solid',
+      options: [
+        { label: $t('common.enabled'), value: '0' },
+        { label: $t('common.disabled'), value: '1' },
+      ],
+      optionType: 'button',
+    },
+    defaultValue: '0',
     fieldName: 'status',
     label: $t('system.menu.status'),
+  },
+  // ========== 徽标配置 ==========
+  {
+    component: 'Divider',
+    dependencies: {
+      show: (values) => {
+        return !['button'].includes(values.type);
+      },
+      triggerFields: ['type'],
+    },
+    fieldName: 'dividerBadge',
+    formItemClass: 'col-span-2 md:col-span-2 pb-0',
+    hideLabel: true,
+    renderComponentContent() {
+      return {
+        default: () => $t('system.menu.badgeSettings'),
+      };
+    },
   },
   {
     component: 'Select',
@@ -271,13 +302,14 @@ const schema: VbenFormSchema[] = [
       allowClear: true,
       class: 'w-full',
       options: [
+        { label: $t('system.menu.badgeType.none'), value: undefined },
         { label: $t('system.menu.badgeType.dot'), value: 'dot' },
         { label: $t('system.menu.badgeType.normal'), value: 'normal' },
       ],
     },
     dependencies: {
       show: (values) => {
-        return values.type !== 'button';
+        return !['button'].includes(values.type);
       },
       triggerFields: ['type'],
     },
@@ -321,6 +353,7 @@ const schema: VbenFormSchema[] = [
     fieldName: 'meta.badgeVariants',
     label: $t('system.menu.badgeVariants'),
   },
+  // ========== 高级设置 ==========
   {
     component: 'Divider',
     dependencies: {
@@ -337,6 +370,20 @@ const schema: VbenFormSchema[] = [
         default: () => $t('system.menu.advancedSettings'),
       };
     },
+  },
+  {
+    component: 'IconPicker',
+    componentProps: {
+      prefix: 'carbon',
+    },
+    dependencies: {
+      show: (values) => {
+        return ['catalog', 'embedded', 'menu'].includes(values.type);
+      },
+      triggerFields: ['type'],
+    },
+    fieldName: 'meta.activeIcon',
+    label: $t('system.menu.activeIcon'),
   },
   {
     component: 'Checkbox',
@@ -365,21 +412,6 @@ const schema: VbenFormSchema[] = [
     renderComponentContent() {
       return {
         default: () => $t('system.menu.affixTab'),
-      };
-    },
-  },
-  {
-    component: 'Checkbox',
-    dependencies: {
-      show: (values) => {
-        return !['button'].includes(values.type);
-      },
-      triggerFields: ['type'],
-    },
-    fieldName: 'meta.hideInMenu',
-    renderComponentContent() {
-      return {
-        default: () => $t('system.menu.hideInMenu'),
       };
     },
   },
@@ -447,18 +479,32 @@ const [Drawer, drawerApi] = useVbenDrawer({
   onOpenChange(isOpen) {
     if (isOpen) {
       const data = drawerApi.getData<SystemMenuApi.SystemMenu>();
+      // 保存ID用于判断新增还是修改
+      currentId = data?.id;
       if (data?.type === 'link') {
         data.linkSrc = data.meta?.link;
       } else if (data?.type === 'embedded') {
         data.linkSrc = data.meta?.iframeSrc;
       }
+      // 处理 query 字段：对象转字符串
+      if (data?.meta?.query && typeof data.meta.query === 'object') {
+        try {
+          data.meta.query = JSON.stringify(data.meta.query);
+        } catch {
+          // ignore
+        }
+      }
       if (data) {
+        // 保存当前编辑的ID
+        currentId = data.id;
         formData.value = data;
         formApi.setValues(formData.value);
         titleSuffix.value = formData.value.meta?.title
           ? $t(formData.value.meta.title)
           : '';
       } else {
+        // 新增时清空ID
+        currentId = undefined;
         formApi.resetForm();
         titleSuffix.value = '';
       }
@@ -470,20 +516,33 @@ async function onSubmit() {
   const { valid } = await formApi.validate();
   if (valid) {
     drawerApi.lock();
-    const data =
-      await formApi.getValues<
-        Omit<SystemMenuApi.SystemMenu, 'children' | 'id'>
-      >();
+    const data = (await formApi.getValues()) as any;
+
+    // 处理 link/embedded 类型
     if (data.type === 'link') {
       data.meta = { ...data.meta, link: data.linkSrc };
     } else if (data.type === 'embedded') {
       data.meta = { ...data.meta, iframeSrc: data.linkSrc };
     }
+    // 处理 query 字段：字符串转对象
+    const queryStr = data.meta?.query;
+    if (queryStr && typeof queryStr === 'string' && queryStr.trim()) {
+      try {
+        data.meta.query = JSON.parse(queryStr);
+      } catch {
+        // 解析失败保持原样
+      }
+    } else if (queryStr === '') {
+      data.meta.query = undefined;
+    }
+    // 删除临时字段
     delete data.linkSrc;
+    // 如果是修改则添加id
+    if (currentId) {
+      data.id = currentId;
+    }
     try {
-      await (formData.value?.id
-        ? updateMenu(formData.value.id, data)
-        : createMenu(data));
+      await (currentId ? updateMenu(data) : createMenu(data));
       drawerApi.close();
       emit('success');
     } finally {
@@ -492,7 +551,7 @@ async function onSubmit() {
   }
 }
 const getDrawerTitle = computed(() =>
-  formData.value?.id
+  currentId
     ? $t('ui.actionTitle.edit', [$t('system.menu.name')])
     : $t('ui.actionTitle.create', [$t('system.menu.name')]),
 );
