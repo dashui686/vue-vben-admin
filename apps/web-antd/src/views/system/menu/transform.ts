@@ -68,7 +68,8 @@ function statusToBoolean(value: string | undefined, invert = false): boolean {
  */
 export function toFrontendMenu(backend: BackendMenu): FrontendMenu {
   // 确定菜单类型
-  let finalType: FrontendMenuType = MENU_TYPE_TO_FRONTEND[backend.menuType] || 'menu';
+  let finalType: FrontendMenuType =
+    MENU_TYPE_TO_FRONTEND[backend.menuType] || 'menu';
   let link: string | undefined;
   let iframeSrc: string | undefined;
 

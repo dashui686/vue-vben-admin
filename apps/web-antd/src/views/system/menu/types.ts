@@ -132,7 +132,13 @@ export interface FrontendMenuMeta {
   /** 徽标类型 */
   badgeType?: 'dot' | 'normal';
   /** 徽标颜色 */
-  badgeVariants?: 'default' | 'destructive' | 'primary' | 'success' | 'warning' | string;
+  badgeVariants?:
+    | 'default'
+    | 'destructive'
+    | 'primary'
+    | 'success'
+    | 'warning'
+    | string;
   /** 激活路径 */
   activePath?: string;
   /** 外链地址 */

@@ -9,10 +9,18 @@ import { $t } from '#/locales';
  */
 export function getMenuTypeOptions() {
   return [
-    { color: 'processing', label: $t('system.menu.typeCatalog'), value: 'catalog' },
+    {
+      color: 'processing',
+      label: $t('system.menu.typeCatalog'),
+      value: 'catalog',
+    },
     { color: 'default', label: $t('system.menu.typeMenu'), value: 'menu' },
     { color: 'warning', label: $t('system.menu.typeLink'), value: 'link' },
-    { color: 'success', label: $t('system.menu.typeEmbedded'), value: 'embedded' },
+    {
+      color: 'success',
+      label: $t('system.menu.typeEmbedded'),
+      value: 'embedded',
+    },
     { color: 'error', label: $t('system.menu.typeButton'), value: 'button' },
   ];
 }

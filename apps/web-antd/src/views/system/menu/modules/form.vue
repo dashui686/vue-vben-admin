@@ -25,7 +25,6 @@ import { $t } from '#/locales';
 import { componentKeys } from '#/router/routes';
 
 import { getMenuTypeOptions } from '../data';
-import type { FrontendMenu } from '../types';
 
 const emit = defineEmits<{
   success: [];
