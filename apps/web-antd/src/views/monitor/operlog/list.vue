@@ -10,8 +10,8 @@ import {
   Button,
   Descriptions,
   DescriptionsItem,
-  Modal,
   message,
+  Modal,
 } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';

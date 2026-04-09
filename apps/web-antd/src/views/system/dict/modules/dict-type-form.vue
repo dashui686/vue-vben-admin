@@ -2,11 +2,15 @@
 import type { SystemDictTypeApi } from '#/api/system/dict';
 
 import { computed, ref } from 'vue';
+
 import { useVbenModal } from '@vben/common-ui';
+
 import { Button } from 'ant-design-vue';
+
 import { useVbenForm } from '#/adapter/form';
 import { createDictType, getDictType, updateDictType } from '#/api/system/dict';
 import { $t } from '#/locales';
+
 import { useDictTypeFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
@@ -64,9 +68,11 @@ const [Modal, modalApi] = useVbenModal({
     <Form class="mx-4" />
     <template #prepend-footer>
       <div class="flex-auto">
-        <Button type="primary" danger @click="formApi.resetForm()">{{
+        <Button type="primary" danger @click="formApi.resetForm()">
+{{
           $t('common.reset')
-        }}</Button>
+        }}
+</Button>
       </div>
     </template>
   </Modal>

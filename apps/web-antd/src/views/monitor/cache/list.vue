@@ -1,17 +1,20 @@
 <script lang="ts" setup>
+import type { MonitorCacheApi } from '#/api/monitor/cache';
+
 import { onMounted, ref } from 'vue';
+
 import { Page } from '@vben/common-ui';
+
 import {
+  Button,
   Card,
   Descriptions,
   DescriptionsItem,
   Statistic,
   Table,
-  Button,
-  message,
 } from 'ant-design-vue';
+
 import { getCacheInfo } from '#/api/monitor/cache';
-import type { MonitorCacheApi } from '#/api/monitor/cache';
 
 const cacheInfo = ref<MonitorCacheApi.CacheListInfoVo>();
 const loading = ref(false);
@@ -53,21 +56,21 @@ onMounted(() => {
         </div>
         <Table
           v-if="cacheInfo?.commandStats?.length"
-          :dataSource="cacheInfo.commandStats"
+          :data-source="cacheInfo.commandStats"
           :pagination="false"
           size="small"
           class="mt-4"
-          rowKey="name"
+          row-key="name"
         >
-          <Table.Column title="命令" dataIndex="name" />
-          <Table.Column title="调用次数" dataIndex="value" />
+          <Table.Column title="命令" data-index="name" />
+          <Table.Column title="调用次数" data-index="value" />
         </Table>
       </Card>
 
       <div class="text-center">
-        <Button type="primary" @click="loadCacheInfo" :loading="loading"
-          >刷新缓存信息</Button
-        >
+        <Button type="primary" @click="loadCacheInfo" :loading="loading">
+刷新缓存信息
+</Button>
       </div>
     </div>
   </Page>

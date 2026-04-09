@@ -15,7 +15,6 @@ import {
   changePostStatus,
   deletePost,
   getPostList,
-  updatePost,
 } from '#/api/system/post';
 import { $t } from '#/locales';
 

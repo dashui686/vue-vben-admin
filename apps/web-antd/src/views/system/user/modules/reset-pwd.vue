@@ -3,8 +3,6 @@ import { computed, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
-import { Button } from 'ant-design-vue';
-
 import { useVbenForm } from '#/adapter/form';
 import { resetUserPwd } from '#/api/system/user';
 
@@ -32,7 +30,10 @@ const [Modal, modalApi] = useVbenModal({
       modalApi.lock();
       const data = await formApi.getValues();
       try {
-        await resetUserPwd({ userId: userId.value as number, password: data.password });
+        await resetUserPwd({
+          userId: userId.value as number,
+          password: data.password,
+        });
         modalApi.close();
         emit('success');
       } finally {

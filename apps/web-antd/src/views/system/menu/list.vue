@@ -43,9 +43,20 @@ const [Grid, gridApi] = useVbenVxeGrid({
 });
 
 function onActionClick({ code, row }: OnActionClickParams<FrontendMenu>) {
-  if (code === 'append') onAppend(row);
-  else if (code === 'delete') onDelete(row);
-  else if (code === 'edit') onEdit(row);
+  switch (code) {
+    case 'append': {
+      onAppend(row);
+      break;
+    }
+    case 'delete': {
+      onDelete(row);
+      break;
+    }
+    case 'edit': {
+      onEdit(row);
+      break;
+    }
+  }
 }
 
 function onRefresh() {

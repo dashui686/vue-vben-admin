@@ -103,8 +103,8 @@ export async function updateUser(data: SystemUserApi.SystemUser) {
  * 修改用户状态
  */
 export async function changeUserStatus(data: {
-  userId: number;
   status: string;
+  userId: number;
 }) {
   return requestClient.putWithMsg('/system/user/changeStatus', data);
 }
@@ -112,7 +112,7 @@ export async function changeUserStatus(data: {
 /**
  * 重置密码
  */
-export async function resetUserPwd(data: { userId: number; password: string }) {
+export async function resetUserPwd(data: { password: string; userId: number; }) {
   return requestClient.putWithMsg('/system/user/resetPwd', data);
 }
 

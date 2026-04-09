@@ -56,8 +56,8 @@ export async function getPost(postId: number) {
  * 获取岗位选择框列表
  */
 export async function getPostOptionSelect(params?: {
-  postIds?: number[];
   deptId?: number;
+  postIds?: number[];
 }) {
   return requestClient.get<Array<SystemPostApi.SystemPost>>(
     '/system/post/optionselect',

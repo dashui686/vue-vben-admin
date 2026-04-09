@@ -2,11 +2,15 @@
 import type { SystemConfigApi } from '#/api/system/config';
 
 import { computed, ref } from 'vue';
+
 import { useVbenModal } from '@vben/common-ui';
+
 import { Button } from 'ant-design-vue';
+
 import { useVbenForm } from '#/adapter/form';
 import { createConfig, getConfig, updateConfig } from '#/api/system/config';
 import { $t } from '#/locales';
+
 import { useFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
@@ -64,9 +68,11 @@ const [Modal, modalApi] = useVbenModal({
     <Form class="mx-4" />
     <template #prepend-footer>
       <div class="flex-auto">
-        <Button type="primary" danger @click="formApi.resetForm()">{{
+        <Button type="primary" danger @click="formApi.resetForm()">
+{{
           $t('common.reset')
-        }}</Button>
+        }}
+</Button>
       </div>
     </template>
   </Modal>

@@ -3,7 +3,7 @@ import type {
   OnActionClickParams,
   VxeTableGridOptions,
 } from '#/adapter/vxe-table';
-import type { SystemDictTypeApi, SystemDictDataApi } from '#/api/system/dict';
+import type { SystemDictDataApi, SystemDictTypeApi } from '#/api/system/dict';
 
 import { ref } from 'vue';
 
@@ -14,21 +14,21 @@ import { Button, message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  deleteDictType,
   deleteDictData,
-  getDictTypeList,
+  deleteDictType,
   getDictDataList,
+  getDictTypeList,
 } from '#/api/system/dict';
 import { $t } from '#/locales';
 
 import {
-  useDictTypeGridFormSchema,
-  useDictTypeColumns,
-  useDictDataGridFormSchema,
   useDictDataColumns,
+  useDictDataGridFormSchema,
+  useDictTypeColumns,
+  useDictTypeGridFormSchema,
 } from './data';
-import DictTypeForm from './modules/dict-type-form.vue';
 import DictDataForm from './modules/dict-data-form.vue';
+import DictTypeForm from './modules/dict-type-form.vue';
 
 // ===== 字典类型 =====
 const [DictTypeFormModal, dictTypeFormModalApi] = useVbenModal({
@@ -49,8 +49,11 @@ function onDictTypeActionClick({
   row,
 }: OnActionClickParams<SystemDictTypeApi.SystemDictType>) {
   switch (code) {
-    case 'edit': {
-      dictTypeFormModalApi.setData(row).open();
+    case 'delete': {
+      deleteDictType(String(row.dictId)).then(() => {
+        message.success($t('ui.actionMessage.deleteSuccess', [row.dictName]));
+        dictTypeGridApi.query();
+      });
       break;
     }
     case 'dictData': {
@@ -58,11 +61,8 @@ function onDictTypeActionClick({
       dictDataGridApi.query();
       break;
     }
-    case 'delete': {
-      deleteDictType(String(row.dictId)).then(() => {
-        message.success($t('ui.actionMessage.deleteSuccess', [row.dictName]));
-        dictTypeGridApi.query();
-      });
+    case 'edit': {
+      dictTypeFormModalApi.setData(row).open();
       break;
     }
   }
@@ -73,17 +73,17 @@ function onDictDataActionClick({
   row,
 }: OnActionClickParams<SystemDictDataApi.SystemDictData>) {
   switch (code) {
-    case 'edit': {
-      dictDataFormModalApi
-        .setData({ ...row, dictType: currentDictType.value })
-        .open();
-      break;
-    }
     case 'delete': {
       deleteDictData(String(row.dictCode)).then(() => {
         message.success($t('ui.actionMessage.deleteSuccess', [row.dictLabel]));
         dictDataGridApi.query();
       });
+      break;
+    }
+    case 'edit': {
+      dictDataFormModalApi
+        .setData({ ...row, dictType: currentDictType.value })
+        .open();
       break;
     }
   }

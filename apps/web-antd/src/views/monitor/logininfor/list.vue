@@ -4,7 +4,7 @@ import type { MonitorLogininforApi } from '#/api/monitor/logininfor';
 
 import { Page } from '@vben/common-ui';
 
-import { Button, Modal, message } from 'ant-design-vue';
+import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {

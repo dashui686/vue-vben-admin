@@ -18,11 +18,10 @@ import {
   changeUserStatus,
   deleteUser,
   getUserList,
-  resetUserPwd,
 } from '#/api/system/user';
 import { $t } from '#/locales';
 
-import { useColumns, useGridFormSchema, useResetPwdFormSchema } from './data';
+import { useColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
 import ResetPwd from './modules/reset-pwd.vue';
 
@@ -56,11 +55,7 @@ function buildTree(data: any[]): any[] {
 }
 
 function onDeptSelect(selectedKeys: number[]) {
-  if (selectedKeys.length > 0) {
-    selectedDeptId.value = selectedKeys[0];
-  } else {
-    selectedDeptId.value = undefined;
-  }
+  selectedDeptId.value = selectedKeys.length > 0 ? selectedKeys[0] : undefined;
   gridApi.query();
 }
 
@@ -70,12 +65,12 @@ function onActionClick({
   row,
 }: OnActionClickParams<SystemUserApi.SystemUser>) {
   switch (code) {
-    case 'edit': {
-      onEdit(row);
-      break;
-    }
     case 'delete': {
       onDelete(row);
+      break;
+    }
+    case 'edit': {
+      onEdit(row);
       break;
     }
     case 'resetPwd': {
