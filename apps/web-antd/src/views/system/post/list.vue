@@ -11,11 +11,7 @@ import { Plus } from '@vben/icons';
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import {
-  changePostStatus,
-  deletePost,
-  getPostList,
-} from '#/api/system/post';
+import { changePostStatus, deletePost, getPostList } from '#/api/system/post';
 import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';

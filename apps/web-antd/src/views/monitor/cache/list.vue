@@ -69,8 +69,8 @@ onMounted(() => {
 
       <div class="text-center">
         <Button type="primary" @click="loadCacheInfo" :loading="loading">
-刷新缓存信息
-</Button>
+          刷新缓存信息
+        </Button>
       </div>
     </div>
   </Page>

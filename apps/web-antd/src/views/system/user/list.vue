@@ -14,11 +14,7 @@ import { Button, Card, Input, message, Modal, Tree } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getDeptList } from '#/api/system/dept';
-import {
-  changeUserStatus,
-  deleteUser,
-  getUserList,
-} from '#/api/system/user';
+import { changeUserStatus, deleteUser, getUserList } from '#/api/system/user';
 import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';

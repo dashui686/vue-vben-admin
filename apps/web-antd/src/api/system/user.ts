@@ -112,7 +112,7 @@ export async function changeUserStatus(data: {
 /**
  * 重置密码
  */
-export async function resetUserPwd(data: { password: string; userId: number; }) {
+export async function resetUserPwd(data: { password: string; userId: number }) {
   return requestClient.putWithMsg('/system/user/resetPwd', data);
 }
 
