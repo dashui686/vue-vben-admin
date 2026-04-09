@@ -1,0 +1,305 @@
+import type { VxeTableGridColumns } from '@vben/plugins/vxe-table';
+
+import type { VbenFormSchema } from '#/adapter/form';
+import type { OnActionClickFn } from '#/adapter/vxe-table';
+import type { SystemUserApi } from '#/api/system/user';
+
+import { z } from '#/adapter/form';
+import { getDeptOptionSelect } from '#/api/system/dept';
+import { getPostOptionSelect } from '#/api/system/post';
+import { getRoleOptionselect } from '#/api/system/role';
+import { $t } from '#/locales';
+
+/**
+ * 搜索表单配置
+ */
+export function useGridFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      fieldName: 'userName',
+      label: $t('system.user.userName'),
+      componentProps: {
+        placeholder: '请输入用户账号',
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'phonenumber',
+      label: $t('system.user.phonenumber'),
+      componentProps: {
+        placeholder: '请输入手机号码',
+      },
+    },
+    {
+      component: 'Select',
+      fieldName: 'status',
+      label: $t('system.user.status'),
+      componentProps: {
+        allowClear: true,
+        placeholder: '请选择状态',
+        options: [
+          { label: $t('common.enabled'), value: '0' },
+          { label: $t('common.disabled'), value: '1' },
+        ],
+      },
+    },
+    {
+      component: 'RangePicker',
+      fieldName: 'dateRange',
+      label: $t('system.user.createTime'),
+      componentProps: {
+        class: 'w-full',
+        placeholder: ['开始日期', '结束日期'],
+        valueFormat: 'YYYY-MM-DD',
+      },
+    },
+  ];
+}
+
+/**
+ * 重置密码表单配置
+ */
+export function useResetPwdFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      fieldName: 'password',
+      label: $t('system.user.newPassword'),
+      rules: z
+        .string()
+        .min(5, '密码长度不能少于5个字符')
+        .max(20, '密码长度不能超过20个字符'),
+      componentProps: {
+        type: 'password',
+        placeholder: '请输入新密码',
+      },
+    },
+  ];
+}
+
+/**
+ * 编辑表单字段配置
+ */
+export function useFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      fieldName: 'userName',
+      label: $t('system.user.userName'),
+      rules: z
+        .string()
+        .min(1, $t('ui.formRules.required', [$t('system.user.userName')]))
+        .max(
+          30,
+          $t('ui.formRules.maxLength', [$t('system.user.userName'), 30]),
+        ),
+    },
+    {
+      component: 'Input',
+      fieldName: 'nickName',
+      label: $t('system.user.nickName'),
+      rules: z
+        .string()
+        .min(1, $t('ui.formRules.required', [$t('system.user.nickName')]))
+        .max(
+          30,
+          $t('ui.formRules.maxLength', [$t('system.user.nickName'), 30]),
+        ),
+    },
+    {
+      component: 'ApiTreeSelect',
+      fieldName: 'deptId',
+      label: $t('system.user.deptName'),
+      componentProps: {
+        allowClear: true,
+        api: getDeptOptionSelect,
+        class: 'w-full',
+        labelField: 'deptName',
+        valueField: 'deptId',
+        childrenField: 'children',
+        placeholder: '请选择归属部门',
+        treeDefaultExpandAll: true,
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'password',
+      label: $t('system.user.password'),
+      dependencies: {
+        show: (values) => !values.userId,
+        triggerFields: ['userId'],
+      },
+      rules: z
+        .string()
+        .min(5, '密码长度不能少于5个字符')
+        .max(20, '密码长度不能超过20个字符'),
+      componentProps: {
+        type: 'password',
+        placeholder: '请输入密码',
+      },
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入手机号码',
+      },
+      fieldName: 'phonenumber',
+      label: $t('system.user.phonenumber'),
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入邮箱',
+        type: 'email',
+      },
+      fieldName: 'email',
+      label: $t('system.user.email'),
+    },
+    {
+      component: 'RadioGroup',
+      componentProps: {
+        buttonStyle: 'solid',
+        options: [
+          { label: '男', value: '0' },
+          { label: '女', value: '1' },
+          { label: '未知', value: '2' },
+        ],
+        optionType: 'button',
+      },
+      defaultValue: '0',
+      fieldName: 'sex',
+      label: $t('system.user.sex'),
+    },
+    {
+      component: 'RadioGroup',
+      componentProps: {
+        buttonStyle: 'solid',
+        options: [
+          { label: $t('common.enabled'), value: '0' },
+          { label: $t('common.disabled'), value: '1' },
+        ],
+        optionType: 'button',
+      },
+      defaultValue: '0',
+      fieldName: 'status',
+      label: $t('system.user.status'),
+    },
+    {
+      component: 'ApiSelect',
+      fieldName: 'roleIds',
+      label: $t('system.user.roleIds'),
+      componentProps: {
+        api: getRoleOptionselect,
+        labelField: 'roleName',
+        valueField: 'roleId',
+        mode: 'multiple',
+        placeholder: '请选择角色',
+      },
+    },
+    {
+      component: 'ApiSelect',
+      fieldName: 'postIds',
+      label: $t('system.user.postIds'),
+      componentProps: {
+        api: getPostOptionSelect,
+        labelField: 'postName',
+        valueField: 'postId',
+        mode: 'multiple',
+        placeholder: '请选择岗位',
+      },
+    },
+    {
+      component: 'Textarea',
+      fieldName: 'remark',
+      label: $t('system.user.remark'),
+      componentProps: {
+        placeholder: '请输入备注',
+        rows: 3,
+      },
+    },
+  ];
+}
+
+/**
+ * 表格列配置
+ */
+export function useColumns(
+  onActionClick?: OnActionClickFn<SystemUserApi.SystemUser>,
+  onStatusChange?: (
+    newStatus: any,
+    row: SystemUserApi.SystemUser,
+  ) => PromiseLike<boolean | undefined>,
+): VxeTableGridColumns<SystemUserApi.SystemUser> {
+  return [
+    {
+      type: 'seq',
+      width: 50,
+      title: '#',
+    },
+    {
+      field: 'userName',
+      title: $t('system.user.userName'),
+      minWidth: 120,
+    },
+    {
+      field: 'nickName',
+      title: $t('system.user.nickName'),
+      minWidth: 120,
+    },
+    {
+      field: 'deptName',
+      title: $t('system.user.deptName'),
+      minWidth: 120,
+    },
+    {
+      field: 'phonenumber',
+      title: $t('system.user.phonenumber'),
+      width: 130,
+    },
+    {
+      cellRender: {
+        attrs: { beforeChange: onStatusChange },
+        name: onStatusChange ? 'CellSwitch' : 'CellTag',
+      },
+      field: 'status',
+      title: $t('system.user.status'),
+      width: 100,
+    },
+    {
+      field: 'createTime',
+      title: $t('system.user.createTime'),
+      width: 180,
+    },
+    {
+      align: 'center',
+      cellRender: {
+        name: 'CellOperation',
+        attrs: {
+          nameField: 'userName',
+          nameTitle: $t('system.user.name'),
+          onClick: onActionClick,
+        },
+        options: [
+          {
+            code: 'edit',
+            text: $t('common.edit'),
+          },
+          {
+            code: 'resetPwd',
+            text: $t('system.user.resetPwd'),
+          },
+          {
+            code: 'delete',
+            text: $t('common.delete'),
+          },
+        ],
+      },
+      field: 'operation',
+      fixed: 'right',
+      headerAlign: 'center',
+      showOverflow: false,
+      title: $t('system.user.operation'),
+    },
+  ];
+}

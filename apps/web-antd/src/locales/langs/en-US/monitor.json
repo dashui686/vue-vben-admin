@@ -1,0 +1,15 @@
+{
+  "title": "System Monitor",
+  "operlog": {
+    "title": "Operation Log"
+  },
+  "logininfor": {
+    "title": "Login Log"
+  },
+  "online": {
+    "title": "Online Users"
+  },
+  "cache": {
+    "title": "Cache Monitor"
+  }
+}

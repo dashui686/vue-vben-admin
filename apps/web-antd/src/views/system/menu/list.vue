@@ -30,51 +30,22 @@ const [Grid, gridApi] = useVbenVxeGrid({
     columns: useColumns(onActionClick),
     height: 'auto',
     keepSource: true,
-    pagerConfig: {
-      enabled: false,
-    },
+    pagerConfig: { enabled: false },
     proxyConfig: {
       ajax: {
-        query: async (_params) => {
-          return await getMenuList();
-        },
+        query: () => getMenuList(),
       },
     },
-    rowConfig: {
-      keyField: 'id',
-    },
-    toolbarConfig: {
-      custom: true,
-      export: false,
-      refresh: true,
-      zoom: true,
-    },
-    treeConfig: {
-      parentField: 'pid',
-      rowField: 'id',
-      transform: true,
-    },
+    rowConfig: { keyField: 'id' },
+    toolbarConfig: { custom: true, export: false, refresh: true, zoom: true },
+    treeConfig: { parentField: 'pid', rowField: 'id', transform: true },
   } as VxeTableGridOptions<FrontendMenu>,
 });
 
 function onActionClick({ code, row }: OnActionClickParams<FrontendMenu>) {
-  switch (code) {
-    case 'append': {
-      onAppend(row);
-      break;
-    }
-    case 'delete': {
-      onDelete(row);
-      break;
-    }
-    case 'edit': {
-      onEdit(row);
-      break;
-    }
-    default: {
-      break;
-    }
-  }
+  if (code === 'append') onAppend(row);
+  else if (code === 'delete') onDelete(row);
+  else if (code === 'edit') onEdit(row);
 }
 
 function onRefresh() {
@@ -107,11 +78,10 @@ function onDelete(row: FrontendMenu) {
       });
       onRefresh();
     })
-    .catch(() => {
-      hideLoading();
-    });
+    .catch(() => hideLoading());
 }
 </script>
+
 <template>
   <Page auto-content-height>
     <FormDrawer @success="onRefresh" />
@@ -149,6 +119,7 @@ function onDelete(row: FrontendMenu) {
     </Grid>
   </Page>
 </template>
+
 <style lang="scss" scoped>
 .menu-badge {
   top: 50%;
