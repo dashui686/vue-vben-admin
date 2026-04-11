@@ -46,11 +46,12 @@ function onCreate() {
   formModalApi.setData({}).open();
 }
 
-function onDelete(row: SystemClientApi.SystemClient) {
-  deleteClient(String(row.id)).then(() => {
+async function onDelete(row: SystemClientApi.SystemClient) {
+  try {
+    await deleteClient(String(row.id));
     message.success($t('ui.actionMessage.deleteSuccess', [row.clientKey]));
     onRefresh();
-  });
+  } catch {}
 }
 
 async function onStatusChange(

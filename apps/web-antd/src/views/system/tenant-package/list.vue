@@ -46,11 +46,12 @@ function onCreate() {
   formModalApi.setData({}).open();
 }
 
-function onDelete(row: SystemTenantPackageApi.SystemTenantPackage) {
-  deleteTenantPackage(String(row.packageId)).then(() => {
+async function onDelete(row: SystemTenantPackageApi.SystemTenantPackage) {
+  try {
+    await deleteTenantPackage(String(row.packageId));
     message.success($t('ui.actionMessage.deleteSuccess', [row.packageName]));
     onRefresh();
-  });
+  } catch {}
 }
 
 async function onStatusChange(

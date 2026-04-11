@@ -88,11 +88,12 @@ function onCreate() {
   formModalApi.setData({ deptId: selectedDeptId.value }).open();
 }
 
-function onDelete(row: SystemUserApi.SystemUser) {
-  deleteUser(String(row.userId)).then(() => {
+async function onDelete(row: SystemUserApi.SystemUser) {
+  try {
+    await deleteUser(String(row.userId));
     message.success($t('ui.actionMessage.deleteSuccess', [row.userName]));
     onRefresh();
-  });
+  } catch {}
 }
 
 function onResetPwd(row: SystemUserApi.SystemUser) {

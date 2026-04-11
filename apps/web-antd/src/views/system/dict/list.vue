@@ -44,16 +44,17 @@ const [DictDataFormModal, dictDataFormModalApi] = useVbenModal({
 
 const currentDictType = ref<string>();
 
-function onDictTypeActionClick({
+async function onDictTypeActionClick({
   code,
   row,
 }: OnActionClickParams<SystemDictTypeApi.SystemDictType>) {
   switch (code) {
     case 'delete': {
-      deleteDictType(String(row.dictId)).then(() => {
+      try {
+        await deleteDictType(String(row.dictId));
         message.success($t('ui.actionMessage.deleteSuccess', [row.dictName]));
         dictTypeGridApi.query();
-      });
+      } catch {}
       break;
     }
     case 'dictData': {
@@ -68,16 +69,17 @@ function onDictTypeActionClick({
   }
 }
 
-function onDictDataActionClick({
+async function onDictDataActionClick({
   code,
   row,
 }: OnActionClickParams<SystemDictDataApi.SystemDictData>) {
   switch (code) {
     case 'delete': {
-      deleteDictData(String(row.dictCode)).then(() => {
+      try {
+        await deleteDictData(String(row.dictCode));
         message.success($t('ui.actionMessage.deleteSuccess', [row.dictLabel]));
         dictDataGridApi.query();
-      });
+      } catch {}
       break;
     }
     case 'edit': {

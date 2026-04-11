@@ -46,6 +46,7 @@
     "name": "Dict",
     "dictName": "Dict Name",
     "dictType": "Dict Type",
+    "dataName": "Dict Data",
     "dictData": "Dict Data",
     "dictLabel": "Dict Label",
     "dictValue": "Dict Value",

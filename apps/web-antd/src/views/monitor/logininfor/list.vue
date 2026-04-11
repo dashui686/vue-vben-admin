@@ -1,5 +1,8 @@
 <script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type {
+  OnActionClickParams,
+  VxeTableGridOptions,
+} from '#/adapter/vxe-table';
 import type { MonitorLogininforApi } from '#/api/monitor/logininfor';
 
 import { Page } from '@vben/common-ui';
@@ -13,45 +16,18 @@ import {
   getLogininforList,
 } from '#/api/monitor/logininfor';
 
+import { useColumns } from './data';
+
+function onActionClick({
+  code,
+  row,
+}: OnActionClickParams<MonitorLogininforApi.SysLogininfor>) {
+  if (code === 'delete') onDelete(row);
+}
+
 const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions: {
-    columns: [
-      { type: 'seq', width: 50, title: '#' },
-      { field: 'userName', title: '用户名称', minWidth: 120 },
-      { field: 'clientKey', title: '客户端', width: 120 },
-      { field: 'deviceType', title: '设备类型', width: 100 },
-      { field: 'ipaddr', title: '登录IP', width: 130 },
-      { field: 'loginLocation', title: '登录地点', width: 120 },
-      { field: 'browser', title: '浏览器', width: 120 },
-      { field: 'os', title: '操作系统', width: 120 },
-      {
-        field: 'status',
-        title: '登录状态',
-        width: 100,
-        cellRender: { name: 'CellTag' },
-      },
-      { field: 'msg', title: '提示消息', minWidth: 150 },
-      { field: 'loginTime', title: '登录时间', width: 180 },
-      {
-        align: 'center',
-        cellRender: {
-          name: 'CellOperation',
-          attrs: {
-            nameField: 'userName',
-            nameTitle: '日志',
-            onClick: ({ code, row }: any) => {
-              if (code === 'delete') onDelete(row);
-            },
-          },
-          options: [{ code: 'delete', text: '删除' }],
-        },
-        field: 'operation',
-        fixed: 'right',
-        headerAlign: 'center',
-        showOverflow: false,
-        title: '操作',
-      },
-    ],
+    columns: useColumns(onActionClick),
     height: 'auto',
     keepSource: true,
     pagerConfig: { enabled: true },
@@ -70,11 +46,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
   } as VxeTableGridOptions<MonitorLogininforApi.SysLogininfor>,
 });
 
-function onDelete(row: MonitorLogininforApi.SysLogininfor) {
-  deleteLogininfor(String(row.infoId)).then(() => {
+async function onDelete(row: MonitorLogininforApi.SysLogininfor) {
+  try {
+    await deleteLogininfor(String(row.infoId));
     message.success('删除成功');
     gridApi.query();
-  });
+  } catch {}
 }
 
 function onClean() {

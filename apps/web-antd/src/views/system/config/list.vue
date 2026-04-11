@@ -42,11 +42,12 @@ function onCreate() {
   formModalApi.setData({}).open();
 }
 
-function onDelete(row: SystemConfigApi.SystemConfig) {
-  deleteConfig(String(row.configId)).then(() => {
+async function onDelete(row: SystemConfigApi.SystemConfig) {
+  try {
+    await deleteConfig(String(row.configId));
     message.success($t('ui.actionMessage.deleteSuccess', [row.configName]));
     onRefresh();
-  });
+  } catch {}
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({

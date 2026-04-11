@@ -42,11 +42,12 @@ function onCreate() {
   formModalApi.setData({}).open();
 }
 
-function onDelete(row: SystemPostApi.SystemPost) {
-  deletePost(String(row.postId)).then(() => {
+async function onDelete(row: SystemPostApi.SystemPost) {
+  try {
+    await deletePost(String(row.postId));
     message.success($t('ui.actionMessage.deleteSuccess', [row.postName]));
     onRefresh();
-  });
+  } catch {}
 }
 
 async function onStatusChange(

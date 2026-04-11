@@ -21,7 +21,9 @@ const [Form, formApi] = useVbenForm({
 });
 const dictCode = ref<number | undefined>();
 const getTitle = computed(() =>
-  dictCode.value ? '编辑字典数据' : '新增字典数据',
+  dictCode.value
+    ? $t('ui.actionTitle.edit', [$t('system.dict.dataName')])
+    : $t('ui.actionTitle.create', [$t('system.dict.dataName')]),
 );
 
 const [Modal, modalApi] = useVbenModal({

@@ -14,10 +14,20 @@ import {
   stringify,
 } from '@vben/request';
 import { useAccessStore } from '@vben/stores';
-import { AesEncryption, type BaseAsymmetricEncryption, type BaseSymmetricEncryption, decodeBase64, encodeBase64, randomStr, RsaEncryption } from '@vben/utils';
+import {
+  AesEncryption,
+  decodeBase64,
+  encodeBase64,
+  randomStr,
+  RsaEncryption,
+} from '@vben/utils';
+import type {
+  BaseAsymmetricEncryption,
+  BaseSymmetricEncryption,
+} from '@vben/utils';
 
 import { message, Modal } from 'ant-design-vue';
-import { isEmpty,isNull } from 'lodash-es'
+import { isEmpty, isNull } from 'lodash-es';
 
 import { useAuthStore } from '#/store';
 
@@ -25,7 +35,6 @@ import { handleUnauthorizedLogout } from './helper';
 
 const { apiURL, clientId, enableEncrypt, rsaPublicKey, rsaPrivateKey } =
   useAppConfig(import.meta.env, import.meta.env.PROD);
-
 
 /**
  * 使用非对称加密的实现 前端已经实现RSA/SM2
@@ -47,7 +56,6 @@ const asymmetricEncryption: BaseAsymmetricEncryption = new RsaEncryption({
  * 对称加密的实现 AES/SM4
  */
 const symmetricEncryption: BaseSymmetricEncryption = new AesEncryption();
-
 
 function createRequestClient(baseURL: string) {
   const client = new RequestClient({
@@ -167,7 +175,6 @@ function createRequestClient(baseURL: string) {
   //   }),
   // );
 
-
   client.addResponseInterceptor<HttpResponse>({
     fulfilled: async (response) => {
       const encryptKey = (response.headers ?? {})['encrypt-key'];
@@ -262,11 +269,11 @@ function createRequestClient(baseURL: string) {
         }
         // 分页情况下为code msg rows total 并没有data字段
         // 如果有data 直接返回data 没有data将剩余参数(...other)封装为data返回
-        // 需要考虑data为null的情况(比如查询为空) 所以这里直接判断undefined
-        if (data !== undefined) {
+        // 需要考虑data为null的情况(比如查询为空) 此时需要走other分支返回分页数据
+        if (data !== undefined && data !== null) {
           return data;
         }
-        // 没有data 将其他参数包装为data
+        // 没有data或data为null 将其他参数包装为data
         return other;
       }
       // 在此处根据自己项目的实际情况对不同的code执行不同的操作

@@ -6,6 +6,7 @@ import type { SystemRoleApi } from '#/api/system/role';
 import { computed, nextTick, ref } from 'vue';
 
 import { Tree, useVbenDrawer } from '@vben/common-ui';
+import { IconifyIcon } from '@vben/icons';
 
 import { Spin } from 'ant-design-vue';
 

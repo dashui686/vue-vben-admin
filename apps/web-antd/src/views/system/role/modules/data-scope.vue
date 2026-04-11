@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import type { Recordable } from '@vben/types';
-
 import { ref, watch } from 'vue';
 
 import { Modal, Radio, Spin, Tree } from 'ant-design-vue';
@@ -8,9 +6,9 @@ import { Modal, Radio, Spin, Tree } from 'ant-design-vue';
 import { allocateDataScope, getRoleDeptTree } from '#/api';
 
 const props = defineProps<{
+  dataScope?: string;
   open?: boolean;
   roleId?: string;
-  dataScope?: string;
 }>();
 
 const emits = defineEmits(['success', 'update:open']);

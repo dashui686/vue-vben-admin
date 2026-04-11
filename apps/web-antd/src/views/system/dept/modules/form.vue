@@ -23,12 +23,11 @@ const [Form, formApi] = useVbenForm({
 
 const deptId = ref<number | undefined>();
 
-const getTitle = computed(() => {
-  const values = formApi.form?.values;
-  return values?.deptId
+const getTitle = computed(() =>
+  deptId.value
     ? $t('ui.actionTitle.edit', [$t('system.dept.name')])
-    : $t('ui.actionTitle.create', [$t('system.dept.name')]);
-});
+    : $t('ui.actionTitle.create', [$t('system.dept.name')]),
+);
 
 function resetForm() {
   formApi.resetForm();
@@ -63,6 +62,7 @@ const [Modal, modalApi] = useVbenModal({
         formApi.setValues(deptData);
       } else {
         // 新增模式
+        deptId.value = undefined;
         formApi.setValues(data || {});
       }
     }

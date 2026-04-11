@@ -46,10 +46,11 @@ function onCreate() {
 /**
  * 删除部门
  */
-function onDelete(row: SystemDeptApi.SystemDept) {
-  deleteDept(row.deptId).then(() => {
+async function onDelete(row: SystemDeptApi.SystemDept) {
+  try {
+    await deleteDept(row.deptId);
     refreshGrid();
-  });
+  } catch {}
 }
 
 /**

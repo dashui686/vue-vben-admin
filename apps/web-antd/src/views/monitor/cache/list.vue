@@ -23,6 +23,8 @@ async function loadCacheInfo() {
   loading.value = true;
   try {
     cacheInfo.value = await getCacheInfo();
+  } catch {
+    // getCacheInfo 失败时静默处理
   } finally {
     loading.value = false;
   }
