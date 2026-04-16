@@ -12,15 +12,12 @@ import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  useBatchDelete,
-  useGridSelection,
-} from '#/composables/useGridHelper';
-import {
   deleteConfig,
   exportConfig,
   getConfigList,
   refreshConfigCache,
 } from '#/api/system/config';
+import { useBatchDelete, useGridSelection } from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
@@ -64,7 +61,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'configId' },
-    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      search: true,
+      zoom: true,
+    },
   } as VxeTableGridOptions<SystemConfigApi.SystemConfig>,
 });
 

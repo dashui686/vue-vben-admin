@@ -14,16 +14,13 @@ import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  useBatchDelete,
-  useGridSelection,
-} from '#/composables/useGridHelper';
-import {
   changeJobStatus,
   deleteJob,
   exportJob,
   getJobList,
   runJob,
 } from '#/api/monitor/job';
+import { useBatchDelete, useGridSelection } from '#/composables/useGridHelper';
 
 import { useColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
@@ -38,11 +35,7 @@ const [FormModal, formModalApi] = useVbenModal({
 const { deleteDisabled, editDisabled, gridEvents, onToolbarEdit } =
   useGridSelection<MonitorJobApi.SysJob>(() => gridApi);
 
-const { onBatchDelete } = useBatchDelete(
-  () => gridApi,
-  deleteJob,
-  'jobId',
-);
+const { onBatchDelete } = useBatchDelete(() => gridApi, deleteJob, 'jobId');
 
 const [Grid, gridApi] = useVbenVxeGrid({
   gridEvents,

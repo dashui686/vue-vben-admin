@@ -13,11 +13,6 @@ import { Plus } from '@vben/icons';
 import { Button, Card, Input, message, Tree } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import {
-  useBatchDelete,
-  useGridSelection,
-  useStatusConfirm,
-} from '#/composables/useGridHelper';
 import { getDeptList } from '#/api/system/dept';
 import {
   changePostStatus,
@@ -25,6 +20,11 @@ import {
   exportPost,
   getPostList,
 } from '#/api/system/post';
+import {
+  useBatchDelete,
+  useGridSelection,
+  useStatusConfirm,
+} from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
@@ -64,11 +64,7 @@ function onDeptSelect(selectedKeys: Array<number | string>) {
 const { deleteDisabled, editDisabled, gridEvents, onToolbarEdit } =
   useGridSelection<SystemPostApi.SystemPost>(() => gridApi);
 
-const { onBatchDelete } = useBatchDelete(
-  () => gridApi,
-  deletePost,
-  'postId',
-);
+const { onBatchDelete } = useBatchDelete(() => gridApi, deletePost, 'postId');
 
 const { onStatusChange } = useStatusConfirm<SystemPostApi.SystemPost>(
   ({ id, status }) => changePostStatus({ postId: id, status }),
@@ -103,7 +99,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'postId' },
-    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      search: true,
+      zoom: true,
+    },
   } as VxeTableGridOptions<SystemPostApi.SystemPost>,
 });
 

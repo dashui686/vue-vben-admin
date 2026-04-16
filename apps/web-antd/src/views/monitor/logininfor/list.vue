@@ -10,7 +10,6 @@ import { Page } from '@vben/common-ui';
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { useBatchDelete, useGridSelection } from '#/composables/useGridHelper';
 import {
   cleanLogininfor,
   deleteLogininfor,
@@ -18,6 +17,7 @@ import {
   getLogininforList,
   unlockUser,
 } from '#/api/monitor/logininfor';
+import { useBatchDelete, useGridSelection } from '#/composables/useGridHelper';
 
 import { useColumns, useGridFormSchema } from './data';
 
@@ -114,9 +114,9 @@ async function onExport() {
   <Page auto-content-height>
     <Grid table-title="登录日志">
       <template #toolbar-tools>
-        <Button :disabled="deleteDisabled" danger @click="onBatchDelete"
-          >删除</Button
-        >
+        <Button :disabled="deleteDisabled" danger @click="onBatchDelete">
+删除
+</Button>
         <Button danger style="margin-left: 8px" @click="onClean">
           清空日志
         </Button>

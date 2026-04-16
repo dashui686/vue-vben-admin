@@ -11,11 +11,8 @@ import { Plus } from '@vben/icons';
 import { Button, message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import {
-  useBatchDelete,
-  useGridSelection,
-} from '#/composables/useGridHelper';
 import { deleteNotice, getNoticeList } from '#/api/system/notice';
+import { useBatchDelete, useGridSelection } from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
@@ -59,7 +56,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'noticeId' },
-    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      search: true,
+      zoom: true,
+    },
   } as VxeTableGridOptions<SystemNoticeApi.SystemNotice>,
 });
 

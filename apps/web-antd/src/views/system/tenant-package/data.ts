@@ -6,8 +6,6 @@ import type { SystemTenantPackageApi } from '#/api/system/tenantPackage';
 
 import { z } from '#/adapter/form';
 import { getMenuTreeselect } from '#/api/system/menu';
-import { $t } from '#/locales';
-
 import {
   operationColumn,
   remarkField,
@@ -15,6 +13,7 @@ import {
   statusRadioField,
   statusSelectField,
 } from '#/composables/useDataHelper';
+import { $t } from '#/locales';
 
 /**
  * 搜索表单配置

@@ -6,8 +6,6 @@ import type { SystemPostApi } from '#/api/system/post';
 
 import { z } from '#/adapter/form';
 import { getDeptTree } from '#/api/system/post';
-import { $t } from '#/locales';
-
 import {
   operationColumn,
   remarkField,
@@ -15,6 +13,7 @@ import {
   statusRadioField,
   statusSelectField,
 } from '#/composables/useDataHelper';
+import { $t } from '#/locales';
 
 /**
  * 搜索表单配置

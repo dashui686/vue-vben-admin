@@ -16,11 +16,8 @@ import { Plus } from '@vben/icons';
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import {
-  useBatchDelete,
-  useGridSelection,
-} from '#/composables/useGridHelper';
 import { changeRoleStatus, deleteRole, exportRole, getRoleList } from '#/api';
+import { useBatchDelete, useGridSelection } from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
@@ -45,11 +42,7 @@ const dataScopeRoleKey = ref<string>();
 const { deleteDisabled, editDisabled, gridEvents, onToolbarEdit } =
   useGridSelection<SystemRoleApi.SystemRolePageQuery>(() => gridApi);
 
-const { onBatchDelete } = useBatchDelete(
-  () => gridApi,
-  deleteRole,
-  'roleId',
-);
+const { onBatchDelete } = useBatchDelete(() => gridApi, deleteRole, 'roleId');
 
 const [Grid, gridApi] = useVbenVxeGrid({
   gridEvents,
@@ -75,7 +68,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'roleId' },
-    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      search: true,
+      zoom: true,
+    },
   } as VxeTableGridOptions<SystemRoleApi.SystemRolePageQuery>,
 });
 

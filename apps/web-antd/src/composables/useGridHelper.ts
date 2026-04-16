@@ -17,7 +17,9 @@ export function getAllTreeKeys(
   for (const node of nodes) {
     keys.push(String(node[keyField]));
     if (node[childrenField]?.length) {
-      keys.push(...getAllTreeKeys(node[childrenField], keyField, childrenField));
+      keys.push(
+        ...getAllTreeKeys(node[childrenField], keyField, childrenField),
+      );
     }
   }
   return keys;

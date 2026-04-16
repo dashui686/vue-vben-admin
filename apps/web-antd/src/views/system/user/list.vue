@@ -14,10 +14,6 @@ import { Plus } from '@vben/icons';
 import { Button, Card, Input, message, Modal, Tree } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import {
-  useBatchDelete,
-  useGridSelection,
-} from '#/composables/useGridHelper';
 import { getDeptList } from '#/api/system/dept';
 import {
   changeUserStatus,
@@ -25,6 +21,7 @@ import {
   exportUser,
   getUserList,
 } from '#/api/system/user';
+import { useBatchDelete, useGridSelection } from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
@@ -78,11 +75,7 @@ function onDeptSelect(selectedKeys: Array<number | string>) {
 const { deleteDisabled, editDisabled, gridEvents, onToolbarEdit } =
   useGridSelection<SystemUserApi.SystemUser>(() => gridApi);
 
-const { onBatchDelete } = useBatchDelete(
-  () => gridApi,
-  deleteUser,
-  'userId',
-);
+const { onBatchDelete } = useBatchDelete(() => gridApi, deleteUser, 'userId');
 
 const [Grid, gridApi] = useVbenVxeGrid({
   gridEvents,
@@ -117,7 +110,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'userId' },
-    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      search: true,
+      zoom: true,
+    },
   } as VxeTableGridOptions<SystemUserApi.SystemUser>,
 });
 

@@ -14,29 +14,23 @@ import { Button, message, Upload } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  useBatchDelete,
-  useGridSelection,
-} from '#/composables/useGridHelper';
-import {
   deleteOss,
   downloadOss,
   getOssList,
   uploadOssFile,
 } from '#/api/system/oss';
+import { useBatchDelete, useGridSelection } from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
 
 const router = useRouter();
 
-const { deleteDisabled, gridEvents } =
-  useGridSelection<SystemOssApi.SystemOss>(() => gridApi);
-
-const { onBatchDelete } = useBatchDelete(
+const { deleteDisabled, gridEvents } = useGridSelection<SystemOssApi.SystemOss>(
   () => gridApi,
-  deleteOss,
-  'ossId',
 );
+
+const { onBatchDelete } = useBatchDelete(() => gridApi, deleteOss, 'ossId');
 
 const [Grid, gridApi] = useVbenVxeGrid({
   gridEvents,
@@ -63,7 +57,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'ossId' },
-    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      search: true,
+      zoom: true,
+    },
   } as VxeTableGridOptions<SystemOssApi.SystemOss>,
 });
 
@@ -118,7 +118,10 @@ function onUpload(info: { file: File }) {
         >
           {{ $t('common.delete') }}
         </Button>
-        <Button style="margin-left: 8px" @click="router.push({ name: 'SystemOssConfig' })">
+        <Button
+          style="margin-left: 8px"
+          @click="router.push({ name: 'SystemOssConfig' })"
+        >
           {{ $t('system.oss.configTitle') }}
         </Button>
       </template>

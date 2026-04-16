@@ -5,9 +5,8 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { SystemConfigApi } from '#/api/system/config';
 
 import { z } from '#/adapter/form';
-import { $t } from '#/locales';
-
 import { operationColumn, remarkField } from '#/composables/useDataHelper';
+import { $t } from '#/locales';
 
 export function useGridFormSchema(): VbenFormSchema[] {
   return [

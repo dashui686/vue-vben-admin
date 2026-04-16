@@ -19,15 +19,12 @@ import {
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  useBatchDelete,
-  useGridSelection,
-} from '#/composables/useGridHelper';
-import {
   cleanOperlog,
   deleteOperlog,
   exportOperlog,
   getOperlogList,
 } from '#/api/monitor/operlog';
+import { useBatchDelete, useGridSelection } from '#/composables/useGridHelper';
 
 import { businessTypeMap, useColumns, useGridFormSchema } from './data';
 
@@ -157,9 +154,9 @@ async function onExport() {
   <Page auto-content-height>
     <Grid table-title="操作日志">
       <template #toolbar-tools>
-        <Button :disabled="deleteDisabled" danger @click="onBatchDelete"
-          >删除</Button
-        >
+        <Button :disabled="deleteDisabled" danger @click="onBatchDelete">
+删除
+</Button>
         <Button danger style="margin-left: 8px" @click="onClean"> 清空 </Button>
         <Button style="margin-left: 8px" @click="onExport">导出</Button>
       </template>

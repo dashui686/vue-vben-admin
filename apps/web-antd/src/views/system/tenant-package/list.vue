@@ -12,14 +12,14 @@ import { Button, message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  useGridSelection,
-  useStatusConfirm,
-} from '#/composables/useGridHelper';
-import {
   changeTenantPackageStatus,
   deleteTenantPackage,
   getTenantPackageList,
 } from '#/api/system/tenantPackage';
+import {
+  useGridSelection,
+  useStatusConfirm,
+} from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
@@ -63,7 +63,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'packageId' },
-    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      search: true,
+      zoom: true,
+    },
   } as VxeTableGridOptions<SystemTenantPackageApi.SystemTenantPackage>,
 });
 

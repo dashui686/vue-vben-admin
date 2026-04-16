@@ -2,7 +2,11 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { SystemRoleApi } from '#/api';
 
-import { operationColumn, statusColumn, statusSelectField } from '#/composables/useDataHelper';
+import {
+  operationColumn,
+  statusColumn,
+  statusSelectField,
+} from '#/composables/useDataHelper';
 import { $t } from '#/locales';
 
 export function useFormSchema(): VbenFormSchema[] {
@@ -114,7 +118,10 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
       [
         { code: 'edit', text: $t('common.edit') },
         { code: 'delete', text: $t('common.delete') },
-        { code: 'allocateDataScope', text: $t('system.role.allocateDataScope') },
+        {
+          code: 'allocateDataScope',
+          text: $t('system.role.allocateDataScope'),
+        },
         { code: 'allocateUser', text: $t('system.role.allocateUser') },
       ],
       'roleName',

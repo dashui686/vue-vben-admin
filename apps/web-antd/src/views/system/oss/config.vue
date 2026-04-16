@@ -14,15 +14,15 @@ import { Button, message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  useBatchDelete,
-  useGridSelection,
-  useStatusConfirm,
-} from '#/composables/useGridHelper';
-import {
   changeOssConfigStatus,
   deleteOssConfig,
   getOssConfigList,
 } from '#/api/system/oss';
+import {
+  useBatchDelete,
+  useGridSelection,
+  useStatusConfirm,
+} from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
 import { useConfigColumns, useConfigGridFormSchema } from './data';
@@ -73,7 +73,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'ossConfigId' },
-    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
+    toolbarConfig: {
+      custom: true,
+      export: false,
+      refresh: true,
+      search: true,
+      zoom: true,
+    },
   } as VxeTableGridOptions<SystemOssApi.SystemOssConfig>,
 });
 
