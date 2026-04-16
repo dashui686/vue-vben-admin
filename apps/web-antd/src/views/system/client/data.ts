@@ -116,6 +116,7 @@ export function useColumns(
   ) => PromiseLike<boolean | undefined>,
 ): VxeTableGridColumns<SystemClientApi.SystemClient> {
   return [
+    { type: 'checkbox', width: 50 },
     { type: 'seq', width: 50, title: '#' },
     { field: 'clientKey', title: $t('system.client.clientKey'), minWidth: 120 },
     {

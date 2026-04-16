@@ -10,6 +10,11 @@
     "title": "Online Users"
   },
   "cache": {
-    "title": "Cache Monitor"
+    "title": "Cache Monitor",
+    "list": "Cache List"
+  },
+  "job": {
+    "title": "Scheduled Task",
+    "log": "Task Log"
   }
 }

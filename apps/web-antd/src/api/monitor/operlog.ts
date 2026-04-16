@@ -48,3 +48,10 @@ export function deleteOperlog(operIds: string) {
 export function cleanOperlog() {
   return requestClient.deleteWithMsg('/monitor/operlog/clean');
 }
+
+export function exportOperlog(data?: MonitorOperlogApi.SysOperLogPageQuery) {
+  return requestClient.download('/monitor/operlog/export', {
+    data,
+    method: 'POST',
+  });
+}

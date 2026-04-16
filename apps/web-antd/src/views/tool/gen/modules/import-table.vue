@@ -5,14 +5,7 @@ import { ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
-import {
-  Button,
-  Form,
-  FormItem,
-  Input,
-  message,
-  Table,
-} from 'ant-design-vue';
+import { Button, Form, FormItem, Input, message, Table } from 'ant-design-vue';
 
 import { importTable, listDbTable } from '#/api/tool/gen';
 

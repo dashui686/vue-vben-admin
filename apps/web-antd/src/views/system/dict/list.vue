@@ -10,14 +10,16 @@ import { ref } from 'vue';
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
-import { Button, message } from 'ant-design-vue';
+import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   deleteDictData,
   deleteDictType,
+  exportDictType,
   getDictDataList,
   getDictTypeList,
+  refreshDictCache,
 } from '#/api/system/dict';
 import { $t } from '#/locales';
 
@@ -172,6 +174,63 @@ function onCreateDictData() {
 function onBackToTypes() {
   currentDictType.value = undefined;
 }
+
+async function onBatchDeleteDictType() {
+  const records = dictTypeGridApi.grid.getCheckboxRecords();
+  if (records.length === 0) {
+    message.warning('请至少选择一条记录');
+    return;
+  }
+  Modal.confirm({
+    title: '确认删除',
+    content: `确认要删除选中的${records.length}条记录吗？`,
+    onOk: async () => {
+      const dictIds = records
+        .map((r: SystemDictTypeApi.SystemDictType) => r.dictId)
+        .join(',');
+      await deleteDictType(dictIds);
+      message.success('删除成功');
+      dictTypeGridApi.query();
+    },
+  });
+}
+
+async function onBatchDeleteDictData() {
+  const records = dictDataGridApi.grid.getCheckboxRecords();
+  if (records.length === 0) {
+    message.warning('请至少选择一条记录');
+    return;
+  }
+  Modal.confirm({
+    title: '确认删除',
+    content: `确认要删除选中的${records.length}条记录吗？`,
+    onOk: async () => {
+      const dictCodes = records
+        .map((r: SystemDictDataApi.SystemDictData) => r.dictCode)
+        .join(',');
+      await deleteDictData(dictCodes);
+      message.success('删除成功');
+      dictDataGridApi.query();
+    },
+  });
+}
+
+async function onExportDictType() {
+  const formValues = await dictTypeGridApi.formApi.getValues();
+  await exportDictType(formValues);
+  message.success('导出成功');
+}
+
+function onRefreshCache() {
+  Modal.confirm({
+    title: '确认刷新',
+    content: '确认要刷新字典缓存吗？',
+    onOk: async () => {
+      await refreshDictCache();
+      message.success('刷新成功');
+    },
+  });
+}
 </script>
 
 <template>
@@ -189,6 +248,7 @@ function onBackToTypes() {
               <Plus class="size-5" />
               {{ $t('ui.actionTitle.create', ['字典数据']) }}
             </Button>
+            <Button danger @click="onBatchDeleteDictData">删除</Button>
           </div>
         </template>
       </DictDataGrid>
@@ -198,10 +258,15 @@ function onBackToTypes() {
     <template v-else>
       <DictTypeGrid :table-title="$t('system.dict.typeList')">
         <template #toolbar-tools>
-          <Button type="primary" @click="onCreateDictType">
-            <Plus class="size-5" />
-            {{ $t('ui.actionTitle.create', [$t('system.dict.name')]) }}
-          </Button>
+          <div class="flex items-center gap-2">
+            <Button type="primary" @click="onCreateDictType">
+              <Plus class="size-5" />
+              {{ $t('ui.actionTitle.create', [$t('system.dict.name')]) }}
+            </Button>
+            <Button danger @click="onBatchDeleteDictType">删除</Button>
+            <Button @click="onExportDictType">导出</Button>
+            <Button @click="onRefreshCache">刷新缓存</Button>
+          </div>
         </template>
       </DictTypeGrid>
     </template>

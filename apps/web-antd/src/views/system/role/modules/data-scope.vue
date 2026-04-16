@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 
-import { Modal, Radio, Spin, Tree } from 'ant-design-vue';
+import { Checkbox, Input, Modal, Radio, Spin, Tree } from 'ant-design-vue';
 
 import { allocateDataScope, getRoleDeptTree } from '#/api';
 
@@ -9,6 +9,8 @@ const props = defineProps<{
   dataScope?: string;
   open?: boolean;
   roleId?: string;
+  roleKey?: string;
+  roleName?: string;
 }>();
 
 const emits = defineEmits(['success', 'update:open']);
@@ -17,6 +19,8 @@ const loadingDeptTree = ref(false);
 const deptTreeData = ref<any[]>([]);
 const checkedDeptKeys = ref<string[]>([]);
 const selectedDataScope = ref<string>('1');
+const deptExpandAll = ref(false);
+const deptCheckAll = ref(false);
 
 const dataScopeOptions = [
   { label: '全部数据权限', value: '1' },
@@ -30,7 +34,8 @@ async function loadDeptTree() {
   loadingDeptTree.value = true;
   try {
     const res = await getRoleDeptTree(props.roleId);
-    deptTreeData.value = res;
+    deptTreeData.value = res.depts || [];
+    checkedDeptKeys.value = (res.checkedKeys || []).map(String);
   } finally {
     loadingDeptTree.value = false;
   }
@@ -78,6 +83,28 @@ watch(
 function onCheck(checkedKeys: string[]) {
   checkedDeptKeys.value = checkedKeys;
 }
+
+function onDeptExpandAll(e: any) {
+  const checked = (e.target as HTMLInputElement).checked;
+  deptExpandAll.value = checked;
+}
+
+function onDeptCheckAll(e: any) {
+  const checked = (e.target as HTMLInputElement).checked;
+  deptCheckAll.value = checked;
+  checkedDeptKeys.value = checked ? getAllKeys(deptTreeData.value) : [];
+}
+
+function getAllKeys(nodes: any[]): string[] {
+  const keys: string[] = [];
+  for (const node of nodes) {
+    keys.push(String(node.id));
+    if (node.children?.length) {
+      keys.push(...getAllKeys(node.children));
+    }
+  }
+  return keys;
+}
 </script>
 
 <template>
@@ -91,6 +118,16 @@ function onCheck(checkedKeys: string[]) {
   >
     <div class="p-4">
       <div class="mb-4">
+        <label class="block mb-2 font-medium">角色名称</label>
+        <Input :value="roleName" disabled />
+      </div>
+
+      <div class="mb-4">
+        <label class="block mb-2 font-medium">权限字符</label>
+        <Input :value="roleKey" disabled />
+      </div>
+
+      <div class="mb-4">
         <label class="block mb-2 font-medium">数据范围</label>
         <Radio.Group
           v-model:value="selectedDataScope"
@@ -100,6 +137,14 @@ function onCheck(checkedKeys: string[]) {
       </div>
 
       <div v-if="selectedDataScope === '2'" class="mt-4">
+        <div class="flex items-center gap-4 mb-2">
+          <Checkbox :checked="deptExpandAll" @change="onDeptExpandAll">
+            展开/折叠
+          </Checkbox>
+          <Checkbox :checked="deptCheckAll" @change="onDeptCheckAll">
+            全选/全不选
+          </Checkbox>
+        </div>
         <label class="block mb-2 font-medium">选择部门</label>
         <Spin :spinning="loadingDeptTree" wrapper-class-name="w-full">
           <div class="max-h-[300px] overflow-auto border rounded p-2">
@@ -107,6 +152,7 @@ function onCheck(checkedKeys: string[]) {
               :tree-data="deptTreeData"
               checkable
               :checked-keys="checkedDeptKeys"
+              :default-expand-all="deptExpandAll"
               @check="onCheck"
               value-field="id"
               label-field="label"

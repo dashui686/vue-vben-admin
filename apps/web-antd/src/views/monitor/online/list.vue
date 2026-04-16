@@ -12,7 +12,7 @@ import { message, Modal } from 'ant-design-vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { forceLogout, getOnlineList } from '#/api/monitor/online';
 
-import { useColumns } from './data';
+import { useColumns, useGridFormSchema } from './data';
 
 function onActionClick({
   code,
@@ -22,6 +22,11 @@ function onActionClick({
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: {
+    schema: useGridFormSchema(),
+    submitOnChange: true,
+    submitOnEnter: true,
+  },
   gridOptions: {
     columns: useColumns(onActionClick),
     height: 'auto',
@@ -29,8 +34,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
     pagerConfig: { enabled: true },
     proxyConfig: {
       ajax: {
-        query: async () => {
-          return await getOnlineList();
+        query: async (_params, formValues) => {
+          return await getOnlineList(formValues);
         },
       },
     },

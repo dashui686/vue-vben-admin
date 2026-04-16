@@ -95,3 +95,17 @@ export async function changePostStatus(data: {
 export async function deletePost(postIds: string) {
   return requestClient.deleteWithMsg(`/system/post/${postIds}`);
 }
+
+/**
+ * 获取部门树列表
+ */
+export async function getDeptTree() {
+  return requestClient.get('/system/post/deptTree');
+}
+
+export async function exportPost(data?: SystemPostApi.SystemPostPageQuery) {
+  return requestClient.download('/system/post/export', {
+    data,
+    method: 'POST',
+  });
+}

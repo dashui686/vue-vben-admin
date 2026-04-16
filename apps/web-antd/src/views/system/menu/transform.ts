@@ -102,8 +102,8 @@ export function toBackendMenu(frontend: FrontendMenu): BackendMenu {
   }
 
   return {
-    menuId: frontend.id ? Number(frontend.id) : undefined,
-    parentId: Number(frontend.pid) || 0,
+    menuId: frontend.id,
+    parentId: frontend.pid,
     menuName: frontend.name,
     orderNum: meta.order ?? 0,
     path,

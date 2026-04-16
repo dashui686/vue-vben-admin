@@ -81,6 +81,15 @@ export function refreshDictCache() {
   return requestClient.deleteWithMsg('/system/dict/type/refreshCache');
 }
 
+export function exportDictType(
+  data?: SystemDictTypeApi.SystemDictTypePageQuery,
+) {
+  return requestClient.download('/system/dict/type/export', {
+    data,
+    method: 'POST',
+  });
+}
+
 // ===== 字典数据 =====
 
 export function getDictDataList(

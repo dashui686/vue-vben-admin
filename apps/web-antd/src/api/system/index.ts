@@ -4,6 +4,7 @@ export * from './dept';
 export * from './dict';
 export * from './menu';
 export * from './notice';
+export * from './oss';
 export * from './post';
 export * from './role';
 export * from './tenant';

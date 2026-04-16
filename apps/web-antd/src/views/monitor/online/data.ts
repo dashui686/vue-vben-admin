@@ -1,7 +1,29 @@
 import type { VxeTableGridColumns } from '@vben/plugins/vxe-table';
 
+import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { MonitorOnlineApi } from '#/api/monitor/online';
+
+export function useGridFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      fieldName: 'ipaddr',
+      label: '登录地址',
+      componentProps: {
+        placeholder: '请输入登录地址',
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'userName',
+      label: '用户名称',
+      componentProps: {
+        placeholder: '请输入用户名称',
+      },
+    },
+  ];
+}
 
 export function useColumns(
   onActionClick?: OnActionClickFn<MonitorOnlineApi.SysUserOnline>,

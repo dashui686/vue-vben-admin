@@ -8,7 +8,7 @@ import { computed, nextTick, ref } from 'vue';
 import { Tree, useVbenDrawer } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
 
-import { Spin } from 'ant-design-vue';
+import { Checkbox, Spin } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createRole, getMenuTreeselect, getRole, updateRole } from '#/api';
@@ -28,6 +28,8 @@ const [Form, formApi] = useVbenForm({
 const permissions = ref<any[]>([]);
 const defaultCheckedKeys = ref<string[]>([]);
 const loadingPermissions = ref(false);
+const menuExpandAll = ref(false);
+const menuCheckAll = ref(false);
 
 const roleId = ref();
 
@@ -103,12 +105,42 @@ function getNodeClass(node: Recordable<any>) {
 
   return classes.join(' ');
 }
+
+function getAllMenuKeys(nodes: any[]): string[] {
+  const keys: string[] = [];
+  for (const node of nodes) {
+    keys.push(String(node.id));
+    if (node.children?.length) {
+      keys.push(...getAllMenuKeys(node.children));
+    }
+  }
+  return keys;
+}
+
+function onMenuExpandAll(e: any) {
+  menuExpandAll.value = (e.target as HTMLInputElement).checked;
+}
+
+function onMenuCheckAll(e: any) {
+  menuCheckAll.value = (e.target as HTMLInputElement).checked;
+  defaultCheckedKeys.value = menuCheckAll.value
+    ? getAllMenuKeys(permissions.value)
+    : [];
+}
 </script>
 <template>
   <Drawer :title="getDrawerTitle">
     <Form>
       <template #menuIds="slotProps">
         <Spin :spinning="loadingPermissions" wrapper-class-name="w-full">
+          <div class="flex items-center gap-4 mb-2">
+            <Checkbox :checked="menuExpandAll" @change="onMenuExpandAll">
+              展开/折叠
+            </Checkbox>
+            <Checkbox :checked="menuCheckAll" @change="onMenuCheckAll">
+              全选/全不选
+            </Checkbox>
+          </div>
           <Tree
             :tree-data="permissions"
             checkable

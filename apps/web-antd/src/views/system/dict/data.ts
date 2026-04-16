@@ -85,6 +85,7 @@ export function useDictTypeColumns(
   onActionClick?: OnActionClickFn<SystemDictTypeApi.SystemDictType>,
 ): VxeTableGridColumns<SystemDictTypeApi.SystemDictType> {
   return [
+    { type: 'checkbox', width: 50 },
     { type: 'seq', width: 50, title: '#' },
     { field: 'dictName', title: $t('system.dict.dictName'), minWidth: 150 },
     { field: 'dictType', title: $t('system.dict.dictType'), minWidth: 150 },
@@ -242,6 +243,7 @@ export function useDictDataColumns(
   onActionClick?: OnActionClickFn<SystemDictDataApi.SystemDictData>,
 ): VxeTableGridColumns<SystemDictDataApi.SystemDictData> {
   return [
+    { type: 'checkbox', width: 50 },
     { type: 'seq', width: 50, title: '#' },
     { field: 'dictLabel', title: $t('system.dict.dictLabel'), minWidth: 120 },
     { field: 'dictValue', title: $t('system.dict.dictValue'), minWidth: 120 },

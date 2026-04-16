@@ -69,7 +69,8 @@ export function useResetPwdFormSchema(): VbenFormSchema[] {
       rules: z
         .string()
         .min(5, '密码长度不能少于5个字符')
-        .max(20, '密码长度不能超过20个字符'),
+        .max(20, '密码长度不能超过20个字符')
+        .regex(/^[^<>"'|\\]+$/, String.raw`不能包含非法字符：< > " ' \ |`),
       componentProps: {
         type: 'password',
         placeholder: '请输入新密码',
@@ -133,7 +134,8 @@ export function useFormSchema(): VbenFormSchema[] {
       rules: z
         .string()
         .min(5, '密码长度不能少于5个字符')
-        .max(20, '密码长度不能超过20个字符'),
+        .max(20, '密码长度不能超过20个字符')
+        .regex(/^[^<>"'|\\]+$/, String.raw`不能包含非法字符：< > " ' \ |`),
       componentProps: {
         type: 'password',
         placeholder: '请输入密码',
@@ -143,9 +145,15 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         placeholder: '请输入手机号码',
+        maxlength: 11,
       },
       fieldName: 'phonenumber',
       label: $t('system.user.phonenumber'),
+      rules: z
+        .string()
+        .regex(/^1[3-9]\d{9}$/, '请输入正确的手机号码')
+        .optional()
+        .or(z.literal('')),
     },
     {
       component: 'Input',
@@ -279,6 +287,7 @@ export function useColumns(
           nameField: 'userName',
           nameTitle: $t('system.user.name'),
           onClick: onActionClick,
+          maxInline: 2, // 最多显示2个内联按钮，其余放入"更多"
         },
         options: [
           {
@@ -290,6 +299,10 @@ export function useColumns(
             text: $t('system.user.resetPwd'),
           },
           {
+            code: 'authRole',
+            text: $t('system.user.authRole'),
+          },
+          {
             code: 'delete',
             text: $t('common.delete'),
           },
@@ -297,6 +310,7 @@ export function useColumns(
       },
       field: 'operation',
       fixed: 'right',
+      width: 180,
       headerAlign: 'center',
       showOverflow: false,
       title: $t('system.user.operation'),

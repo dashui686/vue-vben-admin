@@ -7,7 +7,7 @@ import type {
 } from '#/adapter/vxe-table';
 import type { SystemRoleApi } from '#/api';
 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
@@ -16,7 +16,7 @@ import { Plus } from '@vben/icons';
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { changeRoleStatus, deleteRole, getRoleList } from '#/api';
+import { changeRoleStatus, deleteRole, exportRole, getRoleList } from '#/api';
 import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
@@ -34,8 +34,14 @@ const [FormDrawer, formDrawerApi] = useVbenDrawer({
 const dataScopeOpen = ref(false);
 const dataScopeRoleId = ref<string>();
 const dataScopeDataScope = ref<string>();
+const dataScopeRoleName = ref<string>();
+const dataScopeRoleKey = ref<string>();
 
 const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents: {
+    checkboxChange: onSelectionChange,
+    checkboxAll: onSelectionChange,
+  },
   formOptions: {
     fieldMappingTime: [['createTime', ['startTime', 'endTime']]],
     schema: useGridFormSchema(),
@@ -147,9 +153,28 @@ function onEdit(row: SystemRoleApi.SystemRolePageQuery) {
   formDrawerApi.setData(row).open();
 }
 
+const selectedCount = ref(0);
+const editDisabled = computed(() => selectedCount.value !== 1);
+const deleteDisabled = computed(() => selectedCount.value === 0);
+
+function onSelectionChange() {
+  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
+}
+
+function onToolbarEdit() {
+  const records = gridApi.grid.getCheckboxRecords();
+  if (records.length !== 1) {
+    message.warning('请选择一条数据');
+    return;
+  }
+  onEdit(records[0] as SystemRoleApi.SystemRolePageQuery);
+}
+
 function onAllocateDataScope(row: SystemRoleApi.SystemRolePageQuery) {
   dataScopeRoleId.value = row.roleId;
   dataScopeDataScope.value = row.dataScope;
+  dataScopeRoleName.value = row.roleName;
+  dataScopeRoleKey.value = row.roleKey;
   dataScopeOpen.value = true;
 }
 
@@ -187,6 +212,32 @@ function onRefresh() {
 function onCreate() {
   formDrawerApi.setData({}).open();
 }
+
+async function onBatchDelete() {
+  const records = gridApi.grid.getCheckboxRecords();
+  if (records.length === 0) {
+    message.warning('请至少选择一条记录');
+    return;
+  }
+  Modal.confirm({
+    title: '确认删除',
+    content: `确认要删除选中的${records.length}条记录吗？`,
+    onOk: async () => {
+      const roleIds = records
+        .map((r: SystemRoleApi.SystemRolePageQuery) => r.roleId)
+        .join(',');
+      await deleteRole(roleIds);
+      message.success('删除成功');
+      onRefresh();
+    },
+  });
+}
+
+async function onExport() {
+  const formValues = await gridApi.formApi.getValues();
+  await exportRole(formValues);
+  message.success('导出成功');
+}
 </script>
 <template>
   <Page auto-content-height>
@@ -195,6 +246,8 @@ function onCreate() {
       :open="dataScopeOpen"
       :role-id="dataScopeRoleId"
       :data-scope="dataScopeDataScope"
+      :role-name="dataScopeRoleName"
+      :role-key="dataScopeRoleKey"
       @update:open="dataScopeOpen = $event"
       @success="onRefresh"
     />
@@ -204,6 +257,22 @@ function onCreate() {
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.role.name')]) }}
         </Button>
+        <Button
+          :disabled="editDisabled"
+          style="margin-left: 8px"
+          @click="onToolbarEdit"
+        >
+          {{ $t('common.edit') }}
+        </Button>
+        <Button
+          :disabled="deleteDisabled"
+          danger
+          style="margin-left: 8px"
+          @click="onBatchDelete"
+        >
+          删除
+        </Button>
+        <Button style="margin-left: 8px" @click="onExport">导出</Button>
       </template>
     </Grid>
   </Page>

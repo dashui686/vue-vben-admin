@@ -92,6 +92,7 @@ export function useColumns(
   onActionClick?: OnActionClickFn<SystemNoticeApi.SystemNotice>,
 ): VxeTableGridColumns<SystemNoticeApi.SystemNotice> {
   return [
+    { type: 'checkbox', width: 50 },
     { type: 'seq', width: 50, title: '#' },
     {
       field: 'noticeTitle',

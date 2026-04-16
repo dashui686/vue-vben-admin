@@ -3,39 +3,42 @@ import type {
   OnActionClickParams,
   VxeTableGridOptions,
 } from '#/adapter/vxe-table';
-import type { SystemNoticeApi } from '#/api/system/notice';
+import type { SystemOssApi } from '#/api/system/oss';
 
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { Page, useVbenModal } from '@vben/common-ui';
-import { Plus } from '@vben/icons';
+import { ArrowLeft, Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteNotice, getNoticeList } from '#/api/system/notice';
+import {
+  changeOssConfigStatus,
+  deleteOssConfig,
+  getOssConfigList,
+} from '#/api/system/oss';
 import { $t } from '#/locales';
 
-import { useColumns, useGridFormSchema } from './data';
-import Form from './modules/form.vue';
+import { useConfigColumns, useConfigGridFormSchema } from './data';
+import ConfigForm from './modules/config-form.vue';
+
+const router = useRouter();
+
+function onBack() {
+  router.push({ name: 'SystemOss' });
+}
 
 const [FormModal, formModalApi] = useVbenModal({
-  connectedComponent: Form,
+  connectedComponent: ConfigForm,
   destroyOnClose: true,
 });
-
-const selectedCount = ref(0);
-const editDisabled = computed(() => selectedCount.value !== 1);
-const deleteDisabled = computed(() => selectedCount.value === 0);
-
-function onSelectionChange() {
-  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
-}
 
 function onActionClick({
   code,
   row,
-}: OnActionClickParams<SystemNoticeApi.SystemNotice>) {
+}: OnActionClickParams<SystemOssApi.SystemOssConfig>) {
   if (code === 'edit') onEdit(row);
   else if (code === 'delete') onDelete(row);
 }
@@ -44,7 +47,7 @@ function onRefresh() {
   gridApi.query();
 }
 
-function onEdit(row: SystemNoticeApi.SystemNotice) {
+function onEdit(row: SystemOssApi.SystemOssConfig) {
   formModalApi.setData(row).open();
 }
 
@@ -54,19 +57,51 @@ function onToolbarEdit() {
     message.warning('请选择一条数据');
     return;
   }
-  onEdit(records[0] as SystemNoticeApi.SystemNotice);
+  onEdit(records[0] as SystemOssApi.SystemOssConfig);
+}
+
+const selectedCount = ref(0);
+const editDisabled = computed(() => selectedCount.value !== 1);
+const deleteDisabled = computed(() => selectedCount.value === 0);
+
+function onSelectionChange() {
+  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
 }
 
 function onCreate() {
   formModalApi.setData({}).open();
 }
 
-async function onDelete(row: SystemNoticeApi.SystemNotice) {
+async function onDelete(row: SystemOssApi.SystemOssConfig) {
   try {
-    await deleteNotice(String(row.noticeId));
-    message.success($t('ui.actionMessage.deleteSuccess', [row.noticeTitle]));
+    await deleteOssConfig(String(row.ossConfigId));
+    message.success($t('ui.actionMessage.deleteSuccess', [row.configKey]));
     onRefresh();
   } catch {}
+}
+
+async function onStatusChange(
+  newStatus: string,
+  row: SystemOssApi.SystemOssConfig,
+) {
+  const statusText = newStatus === '0' ? '启用' : '停用';
+  return new Promise((resolve) => {
+    Modal.confirm({
+      title: '确认操作',
+      content: `确认要${statusText}配置"${row.configKey}"吗？`,
+      onOk: async () => {
+        await changeOssConfigStatus({
+          ossConfigId: row.ossConfigId,
+          status: newStatus,
+        });
+        message.success(`${statusText}成功`);
+        resolve(true);
+      },
+      onCancel: () => {
+        resolve(false);
+      },
+    });
+  });
 }
 
 async function onBatchDelete() {
@@ -79,10 +114,10 @@ async function onBatchDelete() {
     title: '确认删除',
     content: `确认要删除选中的${records.length}条记录吗？`,
     onOk: async () => {
-      const noticeIds = records
-        .map((r: SystemNoticeApi.SystemNotice) => r.noticeId)
+      const ids = records
+        .map((r: SystemOssApi.SystemOssConfig) => r.ossConfigId)
         .join(',');
-      await deleteNotice(noticeIds);
+      await deleteOssConfig(ids);
       message.success('删除成功');
       onRefresh();
     },
@@ -95,19 +130,21 @@ const [Grid, gridApi] = useVbenVxeGrid({
     checkboxAll: onSelectionChange,
   },
   formOptions: {
-    schema: useGridFormSchema(),
+    schema: useConfigGridFormSchema(),
     submitOnChange: true,
     submitOnEnter: true,
   },
   gridOptions: {
-    columns: useColumns(onActionClick),
+    columns: useConfigColumns(onActionClick, onStatusChange),
     height: 'auto',
     keepSource: true,
-    pagerConfig: { enabled: true },
+    pagerConfig: {
+      enabled: true,
+    },
     proxyConfig: {
       ajax: {
         query: async ({ page }, formValues) => {
-          return await getNoticeList({
+          return await getOssConfigList({
             pageNum: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
@@ -115,7 +152,9 @@ const [Grid, gridApi] = useVbenVxeGrid({
         },
       },
     },
-    rowConfig: { keyField: 'noticeId' },
+    rowConfig: {
+      keyField: 'ossConfigId',
+    },
     toolbarConfig: {
       custom: true,
       export: false,
@@ -123,18 +162,22 @@ const [Grid, gridApi] = useVbenVxeGrid({
       search: true,
       zoom: true,
     },
-  } as VxeTableGridOptions<SystemNoticeApi.SystemNotice>,
+  } as VxeTableGridOptions<SystemOssApi.SystemOssConfig>,
 });
 </script>
 
 <template>
   <Page auto-content-height>
     <FormModal @success="onRefresh" />
-    <Grid :table-title="$t('system.notice.list')">
+    <Grid :table-title="$t('system.oss.configList')">
       <template #toolbar-tools>
-        <Button type="primary" @click="onCreate">
+        <Button @click="onBack">
+          <ArrowLeft class="size-4" />
+          返回
+        </Button>
+        <Button type="primary" style="margin-left: 8px" @click="onCreate">
           <Plus class="size-5" />
-          {{ $t('ui.actionTitle.create', [$t('system.notice.name')]) }}
+          {{ $t('ui.actionTitle.create', [$t('system.oss.configName')]) }}
         </Button>
         <Button
           :disabled="editDisabled"
@@ -149,7 +192,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
           style="margin-left: 8px"
           @click="onBatchDelete"
         >
-          删除
+          {{ $t('common.delete') }}
         </Button>
       </template>
     </Grid>

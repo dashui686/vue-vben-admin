@@ -7,12 +7,15 @@ import { ProfilePasswordSetting, z } from '@vben/common-ui';
 
 import { message } from 'ant-design-vue';
 
+import { updateUserPasswordApi } from '#/api/core/user';
+
 const formSchema = computed((): VbenFormSchema[] => {
   return [
     {
       fieldName: 'oldPassword',
       label: '旧密码',
       component: 'VbenInputPassword',
+      rules: z.string().min(1, '请输入旧密码'),
       componentProps: {
         placeholder: '请输入旧密码',
       },
@@ -21,6 +24,10 @@ const formSchema = computed((): VbenFormSchema[] => {
       fieldName: 'newPassword',
       label: '新密码',
       component: 'VbenInputPassword',
+      rules: z
+        .string()
+        .min(5, '新密码不能少于5个字符')
+        .max(20, '新密码不能超过20个字符'),
       componentProps: {
         passwordStrength: true,
         placeholder: '请输入新密码',
@@ -50,7 +57,11 @@ const formSchema = computed((): VbenFormSchema[] => {
   ];
 });
 
-function handleSubmit() {
+async function handleSubmit(values: Record<string, string>) {
+  await updateUserPasswordApi({
+    oldPassword: values.oldPassword,
+    newPassword: values.newPassword,
+  });
   message.success('密码修改成功');
 }
 </script>

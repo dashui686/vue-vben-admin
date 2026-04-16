@@ -113,7 +113,9 @@ export async function changeUserStatus(data: {
  * 重置密码
  */
 export async function resetUserPwd(data: { password: string; userId: number }) {
-  return requestClient.putWithMsg('/system/user/resetPwd', data);
+  return requestClient.putWithMsg('/system/user/resetPwd', data, {
+    encrypt: true,
+  });
 }
 
 /**
@@ -128,4 +130,68 @@ export async function deleteUser(userIds: string) {
  */
 export async function getUserDeptTree() {
   return requestClient.get('/system/user/deptTree');
+}
+
+/**
+ * 获取用户角色授权信息
+ */
+export async function getAuthRole(userId: string) {
+  return requestClient.get<{
+    roles: Array<{
+      flag: boolean;
+      roleId: number;
+      roleKey: string;
+      roleName: string;
+    }>;
+    user: SystemUserApi.SystemUser;
+  }>(`/system/user/authRole/${userId}`);
+}
+
+/**
+ * 分配用户角色
+ */
+export async function insertAuthRole(userId: string, roleIds: string) {
+  return requestClient.putWithMsg('/system/user/authRole', undefined, {
+    params: { userId, roleIds },
+  });
+}
+
+/**
+ * 导出用户数据
+ */
+export async function exportUser(params?: any) {
+  const blob = await requestClient.download<Blob>('/system/user/export', {
+    params,
+  });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `user_${Date.now()}.xlsx`;
+  link.click();
+  window.URL.revokeObjectURL(url);
+}
+
+/**
+ * 下载用户导入模板
+ */
+export async function importTemplate() {
+  const blob = await requestClient.download<Blob>(
+    '/system/user/importTemplate',
+  );
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'user_template.xlsx';
+  link.click();
+  window.URL.revokeObjectURL(url);
+}
+
+/**
+ * 导入用户数据
+ */
+export async function importUserData(file: File, updateSupport: boolean) {
+  return requestClient.upload('/system/user/importData', {
+    file,
+    updateSupport,
+  });
 }

@@ -22,6 +22,16 @@ const routes: RouteRecordRaw[] = [
         component: () => import('#/views/system/user/list.vue'),
       },
       {
+        path: '/system/user-auth/role/:userId',
+        name: 'SystemUserAuthRole',
+        meta: {
+          hideInMenu: true,
+          title: '分配角色',
+          activeIcon: 'mdi:account-multiple',
+        },
+        component: () => import('#/views/system/user/auth-role.vue'),
+      },
+      {
         path: '/system/role',
         name: 'SystemRole',
         meta: {
@@ -92,6 +102,25 @@ const routes: RouteRecordRaw[] = [
           title: $t('system.notice.title'),
         },
         component: () => import('#/views/system/notice/list.vue'),
+      },
+      {
+        path: '/system/oss',
+        name: 'SystemOss',
+        meta: {
+          icon: 'mdi:cloud-upload-outline',
+          title: $t('system.oss.title'),
+        },
+        component: () => import('#/views/system/oss/list.vue'),
+      },
+      {
+        path: '/system/oss/config',
+        name: 'SystemOssConfig',
+        meta: {
+          hideInMenu: true,
+          title: $t('system.oss.configTitle'),
+          activeIcon: 'mdi:cloud-upload-outline',
+        },
+        component: () => import('#/views/system/oss/config.vue'),
       },
       {
         path: '/system/client',

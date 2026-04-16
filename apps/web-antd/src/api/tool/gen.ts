@@ -5,7 +5,7 @@ import { requestClient } from '#/api/request';
 export namespace ToolGenApi {
   export interface GenTable {
     [key: string]: any;
-    tableId: number;
+    tableId: string;
     tableName: string;
     tableComment: string;
     className: string;
@@ -26,7 +26,7 @@ export namespace ToolGenApi {
     treeCode?: string;
     treeParentCode?: string;
     treeName?: string;
-    parentMenuId?: number;
+    parentMenuId?: string;
     parentMenuName?: string;
     menuIds?: any[];
     subTableName?: string;
@@ -37,8 +37,8 @@ export namespace ToolGenApi {
 
   export interface GenTableColumn {
     [key: string]: any;
-    columnId: number;
-    tableId: number;
+    columnId: string;
+    tableId: string;
     columnName: string;
     columnComment: string;
     columnType: string;
@@ -95,10 +95,8 @@ export function listDbTable(params?: any) {
 }
 
 /** 查询表详细信息(返回 {info, rows, tables}) */
-export function getGenTable(tableId: number) {
-  return requestClient.get<ToolGenApi.GenTableDetail>(
-    `/tool/gen/${tableId}`,
-  );
+export function getGenTable(tableId: string) {
+  return requestClient.get<ToolGenApi.GenTableDetail>(`/tool/gen/${tableId}`);
 }
 
 /** 修改代码生成信息 */
@@ -114,7 +112,7 @@ export function importTable(tables: string, dataName?: string) {
 }
 
 /** 预览生成代码 */
-export function previewTable(tableId: number) {
+export function previewTable(tableId: string) {
   return requestClient.get<Record<string, string>>(
     `/tool/gen/preview/${tableId}`,
   );
@@ -131,8 +129,8 @@ export function genCode(tableName: string) {
 }
 
 /** 同步数据库 */
-export function synchDb(tableName: string) {
-  return requestClient.get(`/tool/gen/synchDb/${tableName}`);
+export function synchDb(tableId: string) {
+  return requestClient.get(`/tool/gen/synchDb/${tableId}`);
 }
 
 /** 批量生成代码(下载zip) */

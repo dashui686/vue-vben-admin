@@ -365,6 +365,34 @@ export function buildFormSchema(titleSuffix: any): VbenFormSchema[] {
   ];
 }
 
+// ========== 搜索表单 ==========
+
+export function useGridFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      fieldName: 'menuName',
+      label: $t('system.menu.menuName'),
+      componentProps: {
+        placeholder: '请输入菜单名称',
+      },
+    },
+    {
+      component: 'Select',
+      fieldName: 'status',
+      label: $t('system.menu.status'),
+      componentProps: {
+        allowClear: true,
+        placeholder: '请选择菜单状态',
+        options: [
+          { label: $t('common.enabled'), value: '0' },
+          { label: $t('common.disabled'), value: '1' },
+        ],
+      },
+    },
+  ];
+}
+
 // ========== 表格列定义 ==========
 
 /** 定义表格列 */

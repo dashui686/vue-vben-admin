@@ -60,8 +60,8 @@ export namespace SystemMenuApi {
       query?: Recordable<any>;
       title?: string;
     };
-    menuId?: number;
-    parentId?: number;
+    menuId?: string;
+    parentId?: string;
     menuName?: string;
     orderNum?: number;
     queryParam?: string;
@@ -122,7 +122,7 @@ export async function getMenuTreeselect(
   );
 }
 
-export async function getRoleMenuTreeselect(roleId: number) {
+export async function getRoleMenuTreeselect(roleId: string) {
   return requestClient.get<SystemMenuApi.RoleMenuTreeSelect>(
     `/system/menu/roleMenuTreeselect/${roleId}`,
   );
@@ -134,19 +134,23 @@ export async function getRouters() {
   );
 }
 
-export async function getMenu(menuId: number) {
+export async function getMenu(menuId: string) {
   const data = await requestClient.get<BackendMenu>(`/system/menu/${menuId}`);
   return toFrontendMenu(data);
 }
 
 export async function createMenu(data: FrontendMenu) {
-  return requestClient.post('/system/menu', toBackendMenu(data));
+  return requestClient.postWithMsg('/system/menu', toBackendMenu(data));
 }
 
 export async function updateMenu(data: FrontendMenu) {
-  return requestClient.put('/system/menu', toBackendMenu(data));
+  return requestClient.putWithMsg('/system/menu', toBackendMenu(data));
 }
 
 export async function deleteMenu(id: string) {
   return requestClient.delete(`/system/menu/${id}`);
+}
+
+export async function cascadeDeleteMenu(menuIds: string) {
+  return requestClient.deleteWithMsg(`/system/menu/cascade/${menuIds}`);
 }

@@ -5,7 +5,8 @@ import type {
 } from '#/adapter/vxe-table';
 import type { SystemUserApi } from '#/api/system/user';
 
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
@@ -14,12 +15,20 @@ import { Button, Card, Input, message, Modal, Tree } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getDeptList } from '#/api/system/dept';
-import { changeUserStatus, deleteUser, getUserList } from '#/api/system/user';
+import {
+  changeUserStatus,
+  deleteUser,
+  exportUser,
+  getUserList,
+} from '#/api/system/user';
 import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
+import ImportUser from './modules/import-user.vue';
 import ResetPwd from './modules/reset-pwd.vue';
+
+const router = useRouter();
 
 const [FormModal, formModalApi] = useVbenModal({
   connectedComponent: Form,
@@ -28,6 +37,11 @@ const [FormModal, formModalApi] = useVbenModal({
 
 const [ResetPwdModal, resetPwdModalApi] = useVbenModal({
   connectedComponent: ResetPwd,
+  destroyOnClose: true,
+});
+
+const [ImportModal, importModalApi] = useVbenModal({
+  connectedComponent: ImportUser,
   destroyOnClose: true,
 });
 
@@ -50,8 +64,9 @@ function buildTree(data: any[]): any[] {
   }));
 }
 
-function onDeptSelect(selectedKeys: number[]) {
-  selectedDeptId.value = selectedKeys.length > 0 ? selectedKeys[0] : undefined;
+function onDeptSelect(selectedKeys: Array<number | string>) {
+  selectedDeptId.value =
+    selectedKeys.length > 0 ? (selectedKeys[0] as number) : undefined;
   gridApi.query();
 }
 
@@ -61,6 +76,10 @@ function onActionClick({
   row,
 }: OnActionClickParams<SystemUserApi.SystemUser>) {
   switch (code) {
+    case 'authRole': {
+      onAuthRole(row);
+      break;
+    }
     case 'delete': {
       onDelete(row);
       break;
@@ -88,6 +107,23 @@ function onCreate() {
   formModalApi.setData({ deptId: selectedDeptId.value }).open();
 }
 
+const selectedCount = ref(0);
+const editDisabled = computed(() => selectedCount.value !== 1);
+const deleteDisabled = computed(() => selectedCount.value === 0);
+
+function onSelectionChange() {
+  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
+}
+
+function onToolbarEdit() {
+  const records = gridApi.grid.getCheckboxRecords();
+  if (records.length !== 1) {
+    message.warning('请选择一条数据');
+    return;
+  }
+  onEdit(records[0] as SystemUserApi.SystemUser);
+}
+
 async function onDelete(row: SystemUserApi.SystemUser) {
   try {
     await deleteUser(String(row.userId));
@@ -96,18 +132,60 @@ async function onDelete(row: SystemUserApi.SystemUser) {
   } catch {}
 }
 
+function onBatchDelete() {
+  const records = gridApi.grid.getCheckboxRecords();
+  if (records.length === 0) {
+    message.warning('请选择要删除的数据');
+    return;
+  }
+  const userIds = records
+    .map((r: SystemUserApi.SystemUser) => r.userId)
+    .join(',');
+  Modal.confirm({
+    title: '系统提示',
+    content: `确认要删除选中的${records.length}条数据吗？`,
+    onOk: async () => {
+      await deleteUser(userIds);
+      message.success('删除成功');
+      onRefresh();
+    },
+  });
+}
+
 function onResetPwd(row: SystemUserApi.SystemUser) {
   resetPwdModalApi
     .setData({ userId: row.userId, userName: row.userName })
     .open();
 }
 
+function onAuthRole(row: SystemUserApi.SystemUser) {
+  router.push(`/system/user-auth/role/${row.userId}`);
+}
+
+async function onExport() {
+  const formValues = await gridApi.formApi.getValues();
+  const params: any = { ...formValues };
+  if (selectedDeptId.value) {
+    params.deptId = selectedDeptId.value;
+  }
+  if (formValues?.dateRange?.length === 2) {
+    params.beginTime = formValues.dateRange[0];
+    params.endTime = formValues.dateRange[1];
+  }
+  delete params.dateRange;
+  await exportUser(params);
+}
+
+function onImport() {
+  importModalApi.open();
+}
+
 async function onStatusChange(
   newStatus: string,
   row: SystemUserApi.SystemUser,
-) {
+): Promise<boolean | undefined> {
   const statusText = newStatus === '0' ? '启用' : '停用';
-  return new Promise((resolve) => {
+  return new Promise<boolean | undefined>((resolve) => {
     Modal.confirm({
       title: '确认操作',
       content: `确认要${statusText}用户"${row.userName}"吗？`,
@@ -117,13 +195,17 @@ async function onStatusChange(
         resolve(true);
       },
       onCancel: () => {
-        resolve(false);
+        resolve(false as boolean | undefined);
       },
     });
   });
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents: {
+    checkboxChange: onSelectionChange,
+    checkboxAll: onSelectionChange,
+  },
   formOptions: {
     schema: useGridFormSchema(),
     submitOnChange: true,
@@ -144,11 +226,9 @@ const [Grid, gridApi] = useVbenVxeGrid({
             pageSize: page.pageSize,
             ...formValues,
           };
-          // 部门树筛选
           if (selectedDeptId.value) {
             params.deptId = selectedDeptId.value;
           }
-          // 日期范围
           if (formValues?.dateRange?.length === 2) {
             params.beginTime = formValues.dateRange[0];
             params.endTime = formValues.dateRange[1];
@@ -180,6 +260,7 @@ onMounted(() => {
   <Page auto-content-height>
     <FormModal @success="onRefresh" />
     <ResetPwdModal @success="onRefresh" />
+    <ImportModal @success="onRefresh" />
     <div class="flex h-full gap-2">
       <!-- 左侧部门树 -->
       <Card
@@ -204,10 +285,24 @@ onMounted(() => {
       <div class="flex-1">
         <Grid :table-title="$t('system.user.list')">
           <template #toolbar-tools>
-            <Button type="primary" @click="onCreate">
-              <Plus class="size-5" />
-              {{ $t('ui.actionTitle.create', [$t('system.user.name')]) }}
-            </Button>
+            <div class="flex items-center gap-2">
+              <Button type="primary" @click="onCreate">
+                <Plus class="size-5" />
+                {{ $t('ui.actionTitle.create', [$t('system.user.name')]) }}
+              </Button>
+              <Button :disabled="editDisabled" @click="onToolbarEdit">
+                {{ $t('common.edit') }}
+              </Button>
+              <Button :disabled="deleteDisabled" danger @click="onBatchDelete">
+                {{ $t('common.delete') }}
+              </Button>
+              <Button @click="onImport">
+                {{ $t('common.import') }}
+              </Button>
+              <Button @click="onExport">
+                {{ $t('common.export') }}
+              </Button>
+            </div>
           </template>
         </Grid>
       </div>

@@ -124,6 +124,36 @@
     "createTime": "创建时间",
     "operation": "操作"
   },
+  "oss": {
+    "title": "文件管理",
+    "configTitle": "文件配置",
+    "list": "文件列表",
+    "configList": "配置列表",
+    "name": "文件",
+    "configName": "配置",
+    "fileName": "文件名",
+    "originalName": "原名",
+    "fileSuffix": "文件后缀",
+    "url": "文件地址",
+    "createByName": "上传者",
+    "service": "服务商",
+    "createTime": "创建时间",
+    "operation": "操作",
+    "upload": "上传文件",
+    "download": "下载",
+    "configKey": "配置key",
+    "bucketName": "桶名称",
+    "prefix": "前缀",
+    "endpoint": "endpoint",
+    "domain": "自定义域名",
+    "isHttps": "HTTPS",
+    "region": "区域",
+    "remark": "备注",
+    "status": "状态",
+    "accessPolicy": "访问策略",
+    "accessKey": "accessKey",
+    "secretKey": "secretKey"
+  },
   "post": {
     "title": "岗位管理",
     "list": "岗位列表",
@@ -188,7 +218,8 @@
     "roleIds": "角色",
     "postIds": "岗位",
     "resetPwd": "重置密码",
-    "newPassword": "新密码"
+    "newPassword": "新密码",
+    "authRole": "角色分配"
   },
   "role": {
     "title": "角色管理",

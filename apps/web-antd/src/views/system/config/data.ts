@@ -88,6 +88,7 @@ export function useColumns(
   onActionClick?: OnActionClickFn<SystemConfigApi.SystemConfig>,
 ): VxeTableGridColumns<SystemConfigApi.SystemConfig> {
   return [
+    { type: 'checkbox', width: 50 },
     { type: 'seq', width: 50, title: '#' },
     {
       field: 'configName',

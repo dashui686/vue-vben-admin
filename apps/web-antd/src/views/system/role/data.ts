@@ -90,6 +90,8 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
   onStatusChange?: (newStatus: any, row: T) => PromiseLike<boolean | undefined>,
 ): VxeTableGridColumns {
   return [
+    { type: 'checkbox', width: 50 },
+    { type: 'seq', width: 50, title: '#' },
     {
       field: 'roleName',
       title: $t('system.role.roleName'),

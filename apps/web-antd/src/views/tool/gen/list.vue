@@ -118,7 +118,7 @@ function onSynchDb(row: ToolGenApi.GenTable) {
     content: `确认要强制同步"${row.tableName}"表结构吗？`,
     onOk: async () => {
       try {
-        await synchDb(row.tableName);
+        await synchDb(row.tableId);
         message.success('同步成功');
       } catch {
         message.error('同步失败');
@@ -199,7 +199,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
 });
 
 function getFileName(key: string): string {
-  return key.slice(key.lastIndexOf('/') + 1, key.indexOf('.vm'));
+  const prefix = key.startsWith('vben/') ? '[vben] ' : '';
+  return prefix + key.slice(key.lastIndexOf('/') + 1, key.indexOf('.vm'));
 }
 
 function copyCode(code: string) {

@@ -1,4 +1,6 @@
 {
   "more": "More",
-  "inputPlaceholder": "Please input"
+  "inputPlaceholder": "Please input",
+  "import": "Import",
+  "export": "Export"
 }

@@ -5,7 +5,7 @@ import type {
 } from '#/adapter/vxe-table';
 import type { MonitorOperlogApi } from '#/api/monitor/operlog';
 
-import { h } from 'vue';
+import { computed, h, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -21,10 +21,18 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   cleanOperlog,
   deleteOperlog,
+  exportOperlog,
   getOperlogList,
 } from '#/api/monitor/operlog';
 
-import { businessTypeMap, useColumns } from './data';
+import { businessTypeMap, useColumns, useGridFormSchema } from './data';
+
+const selectedCount = ref(0);
+const deleteDisabled = computed(() => selectedCount.value === 0);
+
+function onSelectionChange() {
+  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
+}
 
 function onActionClick({
   code,
@@ -35,6 +43,16 @@ function onActionClick({
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents: {
+    checkboxChange: onSelectionChange,
+    checkboxAll: onSelectionChange,
+  },
+  formOptions: {
+    fieldMappingTime: [['operTime', ['beginTime', 'endTime']]],
+    schema: useGridFormSchema(),
+    submitOnChange: true,
+    submitOnEnter: true,
+  },
   gridOptions: {
     columns: useColumns(onActionClick),
     height: 'auto',
@@ -42,10 +60,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
     pagerConfig: { enabled: true },
     proxyConfig: {
       ajax: {
-        query: async ({ page }) => {
+        query: async ({ page }, formValues) => {
           return await getOperlogList({
             pageNum: page.currentPage,
             pageSize: page.pageSize,
+            ...formValues,
           });
         },
       },
@@ -112,6 +131,26 @@ async function onDeleteOperlog(row: MonitorOperlogApi.SysOperLog) {
   } catch {}
 }
 
+async function onBatchDelete() {
+  const records = gridApi.grid.getCheckboxRecords();
+  if (records.length === 0) {
+    message.warning('请至少选择一条记录');
+    return;
+  }
+  Modal.confirm({
+    title: '确认删除',
+    content: `确认要删除选中的${records.length}条记录吗？`,
+    onOk: async () => {
+      const operIds = records
+        .map((r: MonitorOperlogApi.SysOperLog) => r.operId)
+        .join(',');
+      await deleteOperlog(operIds);
+      message.success('删除成功');
+      gridApi.query();
+    },
+  });
+}
+
 function onClean() {
   Modal.confirm({
     title: '确认清理',
@@ -123,13 +162,23 @@ function onClean() {
     },
   });
 }
+
+async function onExport() {
+  const formValues = await gridApi.formApi.getValues();
+  await exportOperlog(formValues);
+  message.success('导出成功');
+}
 </script>
 
 <template>
   <Page auto-content-height>
     <Grid table-title="操作日志">
       <template #toolbar-tools>
-        <Button danger @click="onClean">清空日志</Button>
+        <Button :disabled="deleteDisabled" danger @click="onBatchDelete">
+          删除
+        </Button>
+        <Button danger style="margin-left: 8px" @click="onClean"> 清空 </Button>
+        <Button style="margin-left: 8px" @click="onExport">导出</Button>
       </template>
     </Grid>
   </Page>

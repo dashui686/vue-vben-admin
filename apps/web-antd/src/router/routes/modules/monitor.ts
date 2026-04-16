@@ -48,6 +48,33 @@ const routes: RouteRecordRaw[] = [
         },
         component: () => import('#/views/monitor/cache/list.vue'),
       },
+      {
+        path: '/monitor/cache/list',
+        name: 'MonitorCacheList',
+        meta: {
+          icon: 'mdi:format-list-bulleted',
+          title: $t('monitor.cache.list'),
+        },
+        component: () => import('#/views/monitor/cache/cache-list.vue'),
+      },
+      {
+        path: '/monitor/job',
+        name: 'MonitorJob',
+        meta: {
+          icon: 'mdi:clock-outline',
+          title: $t('monitor.job.title'),
+        },
+        component: () => import('#/views/monitor/job/list.vue'),
+      },
+      {
+        path: '/monitor/job-log',
+        name: 'MonitorJobLog',
+        meta: {
+          hideInMenu: true,
+          title: $t('monitor.job.log'),
+        },
+        component: () => import('#/views/monitor/job/log.vue'),
+      },
     ],
   },
 ];

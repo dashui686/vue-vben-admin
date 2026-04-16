@@ -4,8 +4,8 @@ export type BackendMenuType = 'C' | 'F' | 'M';
 export type BackendStatus = '0' | '1';
 
 export interface BackendMenu {
-  menuId?: number;
-  parentId: number;
+  menuId?: string;
+  parentId: string;
   menuName: string;
   orderNum: number;
   path: string;
@@ -47,7 +47,7 @@ export type FrontendMenuType =
   | 'menu';
 
 export interface FrontendMenuMeta {
-  title?: string;
+  title: string;
   icon?: string;
   activeIcon?: string;
   order?: number;
@@ -69,15 +69,15 @@ export interface FrontendMenuMeta {
 }
 
 export interface FrontendMenu {
-  id?: string;
-  pid?: string;
-  name?: string;
-  path?: string;
+  id: string;
+  pid: string;
+  name: string;
+  path: string;
   component?: string;
   redirect?: string;
-  type?: FrontendMenuType;
+  type: FrontendMenuType;
   authCode?: string;
-  meta?: FrontendMenuMeta;
+  meta: FrontendMenuMeta;
   status?: BackendStatus;
   children?: FrontendMenu[];
   linkSrc?: string;

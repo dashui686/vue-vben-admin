@@ -121,6 +121,36 @@
     "createTime": "Create Time",
     "operation": "Operation"
   },
+  "oss": {
+    "title": "File Management",
+    "configTitle": "File Config",
+    "list": "File List",
+    "configList": "Config List",
+    "name": "File",
+    "configName": "Config",
+    "fileName": "File Name",
+    "originalName": "Original Name",
+    "fileSuffix": "Suffix",
+    "url": "URL",
+    "createByName": "Uploader",
+    "service": "Provider",
+    "createTime": "Create Time",
+    "operation": "Operation",
+    "upload": "Upload",
+    "download": "Download",
+    "configKey": "Config Key",
+    "bucketName": "Bucket",
+    "prefix": "Prefix",
+    "endpoint": "Endpoint",
+    "domain": "Domain",
+    "isHttps": "HTTPS",
+    "region": "Region",
+    "remark": "Remark",
+    "status": "Status",
+    "accessPolicy": "Access Policy",
+    "accessKey": "Access Key",
+    "secretKey": "Secret Key"
+  },
   "post": {
     "title": "Post Management",
     "list": "Post List",
@@ -185,7 +215,8 @@
     "roleIds": "Roles",
     "postIds": "Posts",
     "resetPwd": "Reset Password",
-    "newPassword": "New Password"
+    "newPassword": "New Password",
+    "authRole": "Assign Roles"
   },
   "role": {
     "title": "Role Management",

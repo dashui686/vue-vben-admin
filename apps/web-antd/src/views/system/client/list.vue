@@ -5,6 +5,8 @@ import type {
 } from '#/adapter/vxe-table';
 import type { SystemClientApi } from '#/api/system/client';
 
+import { computed, ref } from 'vue';
+
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
@@ -42,6 +44,22 @@ function onEdit(row: SystemClientApi.SystemClient) {
   formModalApi.setData(row).open();
 }
 
+function onToolbarEdit() {
+  const records = gridApi.grid.getCheckboxRecords();
+  if (records.length !== 1) {
+    message.warning('请选择一条数据');
+    return;
+  }
+  onEdit(records[0] as SystemClientApi.SystemClient);
+}
+
+const selectedCount = ref(0);
+const editDisabled = computed(() => selectedCount.value !== 1);
+
+function onSelectionChange() {
+  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
+}
+
 function onCreate() {
   formModalApi.setData({}).open();
 }
@@ -74,6 +92,10 @@ async function onStatusChange(
 }
 
 const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents: {
+    checkboxChange: onSelectionChange,
+    checkboxAll: onSelectionChange,
+  },
   formOptions: {
     schema: useGridFormSchema(),
     submitOnChange: true,
@@ -115,6 +137,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
         <Button type="primary" @click="onCreate">
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.client.name')]) }}
+        </Button>
+        <Button
+          :disabled="editDisabled"
+          style="margin-left: 8px"
+          @click="onToolbarEdit"
+        >
+          {{ $t('common.edit') }}
         </Button>
       </template>
     </Grid>

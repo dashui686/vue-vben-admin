@@ -5,6 +5,7 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { SystemPostApi } from '#/api/system/post';
 
 import { z } from '#/adapter/form';
+import { getDeptTree } from '#/api/system/post';
 import { $t } from '#/locales';
 
 /**
@@ -49,6 +50,24 @@ export function useGridFormSchema(): VbenFormSchema[] {
  */
 export function useFormSchema(): VbenFormSchema[] {
   return [
+    {
+      component: 'ApiTreeSelect',
+      fieldName: 'deptId',
+      label: $t('system.user.deptName'),
+      rules: z.number({
+        message: $t('ui.formRules.required', [$t('system.user.deptName')]),
+      }),
+      componentProps: {
+        allowClear: true,
+        api: getDeptTree,
+        class: 'w-full',
+        labelField: 'name',
+        valueField: 'id',
+        childrenField: 'children',
+        placeholder: '请选择归属部门',
+        treeDefaultExpandAll: true,
+      },
+    },
     {
       component: 'Input',
       fieldName: 'postCode',
@@ -132,6 +151,7 @@ export function useColumns(
   ) => PromiseLike<boolean | undefined>,
 ): VxeTableGridColumns<SystemPostApi.SystemPost> {
   return [
+    { type: 'checkbox', width: 50 },
     {
       type: 'seq',
       width: 50,

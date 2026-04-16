@@ -53,3 +53,10 @@ export function deleteConfig(configIds: string) {
 export function refreshConfigCache() {
   return requestClient.deleteWithMsg('/system/config/refreshCache');
 }
+
+export function exportConfig(data?: SystemConfigApi.SystemConfigPageQuery) {
+  return requestClient.download('/system/config/export', {
+    data,
+    method: 'POST',
+  });
+}

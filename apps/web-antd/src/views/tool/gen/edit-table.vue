@@ -30,7 +30,7 @@ import { getGenTable, updateGenTable } from '#/api/tool/gen';
 
 const route = useRoute();
 const router = useRouter();
-const tableId = Number(route.params.tableId);
+const tableId = route.params.tableId as string;
 
 const activeTab = ref('basic');
 const info = ref<ToolGenApi.GenTable>({} as ToolGenApi.GenTable);
@@ -195,11 +195,7 @@ function handleBack() {
             <span>修改生成配置 - {{ info.tableName }}</span>
             <div class="flex gap-2">
               <Button @click="handleBack">返回</Button>
-              <Button
-                type="primary"
-                :loading="submitting"
-                @click="handleSave"
-              >
+              <Button type="primary" :loading="submitting" @click="handleSave">
                 保存
               </Button>
             </div>
@@ -263,10 +259,7 @@ function handleBack() {
               />
               <Table.Column title="字段描述" width="120">
                 <template #default="{ record }">
-                  <Input
-                    v-model:value="record.columnComment"
-                    size="small"
-                  />
+                  <Input v-model:value="record.columnComment" size="small" />
                 </template>
               </Table.Column>
               <Table.Column

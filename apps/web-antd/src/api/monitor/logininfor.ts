@@ -47,3 +47,12 @@ export function deleteLogininfor(infoIds: string) {
 export function cleanLogininfor() {
   return requestClient.deleteWithMsg('/monitor/logininfor/clean');
 }
+
+export function exportLogininfor(
+  data?: MonitorLogininforApi.SysLogininforPageQuery,
+) {
+  return requestClient.download('/monitor/logininfor/export', {
+    data,
+    method: 'POST',
+  });
+}
