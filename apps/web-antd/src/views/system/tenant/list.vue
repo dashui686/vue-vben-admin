@@ -17,6 +17,7 @@ import {
   getTenantList,
 } from '#/api/system/tenant';
 import {
+  useBatchDelete,
   useGridSelection,
   useStatusConfirm,
 } from '#/composables/useGridHelper';
@@ -30,12 +31,18 @@ const [FormModal, formModalApi] = useVbenModal({
   destroyOnClose: true,
 });
 
-const { editDisabled, gridEvents, onToolbarEdit } =
+const { deleteDisabled, editDisabled, gridEvents, onToolbarEdit } =
   useGridSelection<SystemTenantApi.SystemTenant>(() => gridApi);
 
 const { onStatusChange } = useStatusConfirm<SystemTenantApi.SystemTenant>(
   changeTenantStatus,
   { idField: 'id', nameField: 'companyName' },
+);
+
+const { onBatchDelete } = useBatchDelete(
+  () => gridApi,
+  deleteTenant,
+  'id',
 );
 
 const [Grid, gridApi] = useVbenVxeGrid({
@@ -112,6 +119,14 @@ async function onDelete(row: SystemTenantApi.SystemTenant) {
           @click="onToolbarEdit(onEdit)"
         >
           {{ $t('common.edit') }}
+        </Button>
+        <Button
+          :disabled="deleteDisabled"
+          danger
+          style="margin-left: 8px"
+          @click="onBatchDelete"
+        >
+          {{ $t('common.delete') }}
         </Button>
       </template>
     </Grid>

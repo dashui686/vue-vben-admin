@@ -21,6 +21,10 @@ import {
   getDictTypeList,
   refreshDictCache,
 } from '#/api/system/dict';
+import {
+  useBatchDelete,
+  useGridSelection,
+} from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
 import {
@@ -45,6 +49,26 @@ const [DictDataFormModal, dictDataFormModalApi] = useVbenModal({
 });
 
 const currentDictType = ref<string>();
+
+// DictType grid helpers
+const { deleteDisabled: dictTypeDeleteDisabled, editDisabled: dictTypeEditDisabled, gridEvents: dictTypeGridEvents, onToolbarEdit: onDictTypeToolbarEdit } =
+  useGridSelection<SystemDictTypeApi.SystemDictType>(() => dictTypeGridApi);
+
+const { onBatchDelete: onBatchDeleteDictType } = useBatchDelete(
+  () => dictTypeGridApi,
+  deleteDictType,
+  'dictId',
+);
+
+// DictData grid helpers
+const { deleteDisabled: dictDataDeleteDisabled, editDisabled: dictDataEditDisabled, gridEvents: dictDataGridEvents, onToolbarEdit: onDictDataToolbarEdit } =
+  useGridSelection<SystemDictDataApi.SystemDictData>(() => dictDataGridApi);
+
+const { onBatchDelete: onBatchDeleteDictData } = useBatchDelete(
+  () => dictDataGridApi,
+  deleteDictData,
+  'dictCode',
+);
 
 async function onDictTypeActionClick({
   code,
@@ -95,6 +119,7 @@ async function onDictDataActionClick({
 
 // 字典类型列表
 const [DictTypeGrid, dictTypeGridApi] = useVbenVxeGrid({
+  gridEvents: dictTypeGridEvents,
   formOptions: {
     schema: useDictTypeGridFormSchema(),
     submitOnChange: true,
@@ -129,6 +154,7 @@ const [DictTypeGrid, dictTypeGridApi] = useVbenVxeGrid({
 
 // 字典数据列表
 const [DictDataGrid, dictDataGridApi] = useVbenVxeGrid({
+  gridEvents: dictDataGridEvents,
   formOptions: {
     schema: useDictDataGridFormSchema(),
     submitOnChange: true,
@@ -167,52 +193,22 @@ function onCreateDictType() {
   dictTypeFormModalApi.setData({}).open();
 }
 
+function onEditDictType(row: SystemDictTypeApi.SystemDictType) {
+  dictTypeFormModalApi.setData(row).open();
+}
+
 function onCreateDictData() {
   dictDataFormModalApi.setData({ dictType: currentDictType.value }).open();
 }
 
+function onEditDictData(row: SystemDictDataApi.SystemDictData) {
+  dictDataFormModalApi
+    .setData({ ...row, dictType: currentDictType.value })
+    .open();
+}
+
 function onBackToTypes() {
   currentDictType.value = undefined;
-}
-
-async function onBatchDeleteDictType() {
-  const records = dictTypeGridApi.grid.getCheckboxRecords();
-  if (records.length === 0) {
-    message.warning('请至少选择一条记录');
-    return;
-  }
-  Modal.confirm({
-    title: '确认删除',
-    content: `确认要删除选中的${records.length}条记录吗？`,
-    onOk: async () => {
-      const dictIds = records
-        .map((r: SystemDictTypeApi.SystemDictType) => r.dictId)
-        .join(',');
-      await deleteDictType(dictIds);
-      message.success('删除成功');
-      dictTypeGridApi.query();
-    },
-  });
-}
-
-async function onBatchDeleteDictData() {
-  const records = dictDataGridApi.grid.getCheckboxRecords();
-  if (records.length === 0) {
-    message.warning('请至少选择一条记录');
-    return;
-  }
-  Modal.confirm({
-    title: '确认删除',
-    content: `确认要删除选中的${records.length}条记录吗？`,
-    onOk: async () => {
-      const dictCodes = records
-        .map((r: SystemDictDataApi.SystemDictData) => r.dictCode)
-        .join(',');
-      await deleteDictData(dictCodes);
-      message.success('删除成功');
-      dictDataGridApi.query();
-    },
-  });
 }
 
 async function onExportDictType() {
@@ -248,7 +244,12 @@ function onRefreshCache() {
               <Plus class="size-5" />
               {{ $t('ui.actionTitle.create', ['字典数据']) }}
             </Button>
-            <Button danger @click="onBatchDeleteDictData">删除</Button>
+            <Button :disabled="dictDataEditDisabled" @click="onDictDataToolbarEdit(onEditDictData)">
+              {{ $t('common.edit') }}
+            </Button>
+            <Button :disabled="dictDataDeleteDisabled" danger @click="onBatchDeleteDictData">
+              {{ $t('common.delete') }}
+            </Button>
           </div>
         </template>
       </DictDataGrid>
@@ -263,7 +264,12 @@ function onRefreshCache() {
               <Plus class="size-5" />
               {{ $t('ui.actionTitle.create', [$t('system.dict.name')]) }}
             </Button>
-            <Button danger @click="onBatchDeleteDictType">删除</Button>
+            <Button :disabled="dictTypeEditDisabled" @click="onDictTypeToolbarEdit(onEditDictType)">
+              {{ $t('common.edit') }}
+            </Button>
+            <Button :disabled="dictTypeDeleteDisabled" danger @click="onBatchDeleteDictType">
+              {{ $t('common.delete') }}
+            </Button>
             <Button @click="onExportDictType">导出</Button>
             <Button @click="onRefreshCache">刷新缓存</Button>
           </div>

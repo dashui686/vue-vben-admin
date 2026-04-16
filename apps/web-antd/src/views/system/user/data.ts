@@ -214,6 +214,7 @@ export function useColumns(
   ) => PromiseLike<boolean | undefined>,
 ): VxeTableGridColumns<SystemUserApi.SystemUser> {
   return [
+    { type: 'checkbox', width: 50 },
     {
       type: 'seq',
       width: 50,

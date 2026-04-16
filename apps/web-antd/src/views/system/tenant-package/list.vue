@@ -17,6 +17,7 @@ import {
   getTenantPackageList,
 } from '#/api/system/tenantPackage';
 import {
+  useBatchDelete,
   useGridSelection,
   useStatusConfirm,
 } from '#/composables/useGridHelper';
@@ -30,7 +31,7 @@ const [FormModal, formModalApi] = useVbenModal({
   destroyOnClose: true,
 });
 
-const { editDisabled, gridEvents, onToolbarEdit } =
+const { deleteDisabled, editDisabled, gridEvents, onToolbarEdit } =
   useGridSelection<SystemTenantPackageApi.SystemTenantPackage>(() => gridApi);
 
 const { onStatusChange } =
@@ -38,6 +39,12 @@ const { onStatusChange } =
     ({ id, status }) => changeTenantPackageStatus({ packageId: id, status }),
     { idField: 'packageId', nameField: 'packageName' },
   );
+
+const { onBatchDelete } = useBatchDelete(
+  () => gridApi,
+  deleteTenantPackage,
+  'packageId',
+);
 
 const [Grid, gridApi] = useVbenVxeGrid({
   gridEvents,
@@ -113,6 +120,14 @@ async function onDelete(row: SystemTenantPackageApi.SystemTenantPackage) {
           @click="onToolbarEdit(onEdit)"
         >
           {{ $t('common.edit') }}
+        </Button>
+        <Button
+          :disabled="deleteDisabled"
+          danger
+          style="margin-left: 8px"
+          @click="onBatchDelete"
+        >
+          {{ $t('common.delete') }}
         </Button>
       </template>
     </Grid>
