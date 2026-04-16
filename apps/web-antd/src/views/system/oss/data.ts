@@ -5,6 +5,13 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { SystemOssApi } from '#/api/system/oss';
 
 import { z } from '#/adapter/form';
+import {
+  operationColumn,
+  remarkField,
+  statusColumn,
+  statusRadioField,
+  statusSelectField,
+} from '#/composables/useDataHelper';
 import { $t } from '#/locales';
 
 /**
@@ -100,32 +107,16 @@ export function useColumns(
       title: $t('system.oss.createTime'),
       width: 180,
     },
-    {
-      align: 'center',
-      cellRender: {
-        name: 'CellOperation',
-        attrs: {
-          nameField: 'fileName',
-          nameTitle: $t('system.oss.name'),
-          onClick: onActionClick,
-        },
-        options: [
-          {
-            code: 'download',
-            text: $t('system.oss.download'),
-          },
-          {
-            code: 'delete',
-            text: $t('common.delete'),
-          },
-        ],
-      },
-      field: 'operation',
-      fixed: 'right',
-      headerAlign: 'center',
-      showOverflow: false,
-      title: $t('system.oss.operation'),
-    },
+    operationColumn(
+      $t('system.oss.operation'),
+      onActionClick,
+      [
+        { code: 'download', text: $t('system.oss.download') },
+        { code: 'delete', text: $t('common.delete') },
+      ],
+      'fileName',
+      $t('system.oss.name'),
+    ),
   ];
 }
 
@@ -150,19 +141,7 @@ export function useConfigGridFormSchema(): VbenFormSchema[] {
         placeholder: '请输入桶名称',
       },
     },
-    {
-      component: 'Select',
-      fieldName: 'status',
-      label: $t('system.oss.status'),
-      componentProps: {
-        allowClear: true,
-        placeholder: '请选择状态',
-        options: [
-          { label: $t('common.enabled'), value: '0' },
-          { label: $t('common.disabled'), value: '1' },
-        ],
-      },
-    },
+    statusSelectField($t('system.oss.status')),
   ];
 }
 
@@ -208,15 +187,7 @@ export function useConfigColumns(
       title: $t('system.oss.domain'),
       minWidth: 150,
     },
-    {
-      cellRender: {
-        attrs: { beforeChange: onStatusChange },
-        name: onStatusChange ? 'CellSwitch' : 'CellTag',
-      },
-      field: 'status',
-      title: $t('system.oss.status'),
-      width: 100,
-    },
+    statusColumn($t('system.oss.status'), onStatusChange),
     {
       field: 'accessPolicy',
       title: $t('system.oss.accessPolicy'),
@@ -227,32 +198,16 @@ export function useConfigColumns(
       title: $t('system.oss.createTime'),
       width: 180,
     },
-    {
-      align: 'center',
-      cellRender: {
-        name: 'CellOperation',
-        attrs: {
-          nameField: 'configKey',
-          nameTitle: $t('system.oss.configName'),
-          onClick: onActionClick,
-        },
-        options: [
-          {
-            code: 'edit',
-            text: $t('common.edit'),
-          },
-          {
-            code: 'delete',
-            text: $t('common.delete'),
-          },
-        ],
-      },
-      field: 'operation',
-      fixed: 'right',
-      headerAlign: 'center',
-      showOverflow: false,
-      title: $t('system.oss.operation'),
-    },
+    operationColumn(
+      $t('system.oss.operation'),
+      onActionClick,
+      [
+        { code: 'edit', text: $t('common.edit') },
+        { code: 'delete', text: $t('common.delete') },
+      ],
+      'configKey',
+      $t('system.oss.configName'),
+    ),
   ];
 }
 
@@ -377,28 +332,7 @@ export function useConfigFormSchema(): VbenFormSchema[] {
       fieldName: 'accessPolicy',
       label: $t('system.oss.accessPolicy'),
     },
-    {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
-        options: [
-          { label: $t('common.enabled'), value: '0' },
-          { label: $t('common.disabled'), value: '1' },
-        ],
-        optionType: 'button',
-      },
-      defaultValue: '0',
-      fieldName: 'status',
-      label: $t('system.oss.status'),
-    },
-    {
-      component: 'Textarea',
-      fieldName: 'remark',
-      label: $t('system.oss.remark'),
-      componentProps: {
-        placeholder: '请输入备注',
-        rows: 3,
-      },
-    },
+    statusRadioField($t('system.oss.status')),
+    remarkField($t('system.oss.remark')),
   ];
 }

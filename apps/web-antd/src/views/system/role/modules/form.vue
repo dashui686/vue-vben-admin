@@ -12,6 +12,7 @@ import { Checkbox, Spin } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createRole, getMenuTreeselect, getRole, updateRole } from '#/api';
+import { getAllTreeKeys } from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
 import { useFormSchema } from '../data';
@@ -106,17 +107,6 @@ function getNodeClass(node: Recordable<any>) {
   return classes.join(' ');
 }
 
-function getAllMenuKeys(nodes: any[]): string[] {
-  const keys: string[] = [];
-  for (const node of nodes) {
-    keys.push(String(node.id));
-    if (node.children?.length) {
-      keys.push(...getAllMenuKeys(node.children));
-    }
-  }
-  return keys;
-}
-
 function onMenuExpandAll(e: any) {
   menuExpandAll.value = (e.target as HTMLInputElement).checked;
 }
@@ -124,7 +114,7 @@ function onMenuExpandAll(e: any) {
 function onMenuCheckAll(e: any) {
   menuCheckAll.value = (e.target as HTMLInputElement).checked;
   defaultCheckedKeys.value = menuCheckAll.value
-    ? getAllMenuKeys(permissions.value)
+    ? getAllTreeKeys(permissions.value)
     : [];
 }
 </script>

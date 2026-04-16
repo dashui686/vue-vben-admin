@@ -5,14 +5,16 @@ import type {
 } from '#/adapter/vxe-table';
 import type { SystemNoticeApi } from '#/api/system/notice';
 
-import { computed, ref } from 'vue';
-
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
-import { Button, message, Modal } from 'ant-design-vue';
+import { Button, message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import {
+  useBatchDelete,
+  useGridSelection,
+} from '#/composables/useGridHelper';
 import { deleteNotice, getNoticeList } from '#/api/system/notice';
 import { $t } from '#/locales';
 
@@ -24,76 +26,17 @@ const [FormModal, formModalApi] = useVbenModal({
   destroyOnClose: true,
 });
 
-const selectedCount = ref(0);
-const editDisabled = computed(() => selectedCount.value !== 1);
-const deleteDisabled = computed(() => selectedCount.value === 0);
+const { deleteDisabled, editDisabled, gridEvents, onToolbarEdit } =
+  useGridSelection<SystemNoticeApi.SystemNotice>(() => gridApi);
 
-function onSelectionChange() {
-  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
-}
-
-function onActionClick({
-  code,
-  row,
-}: OnActionClickParams<SystemNoticeApi.SystemNotice>) {
-  if (code === 'edit') onEdit(row);
-  else if (code === 'delete') onDelete(row);
-}
-
-function onRefresh() {
-  gridApi.query();
-}
-
-function onEdit(row: SystemNoticeApi.SystemNotice) {
-  formModalApi.setData(row).open();
-}
-
-function onToolbarEdit() {
-  const records = gridApi.grid.getCheckboxRecords();
-  if (records.length !== 1) {
-    message.warning('请选择一条数据');
-    return;
-  }
-  onEdit(records[0] as SystemNoticeApi.SystemNotice);
-}
-
-function onCreate() {
-  formModalApi.setData({}).open();
-}
-
-async function onDelete(row: SystemNoticeApi.SystemNotice) {
-  try {
-    await deleteNotice(String(row.noticeId));
-    message.success($t('ui.actionMessage.deleteSuccess', [row.noticeTitle]));
-    onRefresh();
-  } catch {}
-}
-
-async function onBatchDelete() {
-  const records = gridApi.grid.getCheckboxRecords();
-  if (records.length === 0) {
-    message.warning('请至少选择一条记录');
-    return;
-  }
-  Modal.confirm({
-    title: '确认删除',
-    content: `确认要删除选中的${records.length}条记录吗？`,
-    onOk: async () => {
-      const noticeIds = records
-        .map((r: SystemNoticeApi.SystemNotice) => r.noticeId)
-        .join(',');
-      await deleteNotice(noticeIds);
-      message.success('删除成功');
-      onRefresh();
-    },
-  });
-}
+const { onBatchDelete } = useBatchDelete(
+  () => gridApi,
+  deleteNotice,
+  'noticeId',
+);
 
 const [Grid, gridApi] = useVbenVxeGrid({
-  gridEvents: {
-    checkboxChange: onSelectionChange,
-    checkboxAll: onSelectionChange,
-  },
+  gridEvents,
   formOptions: {
     schema: useGridFormSchema(),
     submitOnChange: true,
@@ -116,20 +59,38 @@ const [Grid, gridApi] = useVbenVxeGrid({
       },
     },
     rowConfig: { keyField: 'noticeId' },
-    toolbarConfig: {
-      custom: true,
-      export: false,
-      refresh: true,
-      search: true,
-      zoom: true,
-    },
+    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<SystemNoticeApi.SystemNotice>,
 });
+
+function onActionClick({
+  code,
+  row,
+}: OnActionClickParams<SystemNoticeApi.SystemNotice>) {
+  if (code === 'edit') onEdit(row);
+  else if (code === 'delete') onDelete(row);
+}
+
+function onEdit(row: SystemNoticeApi.SystemNotice) {
+  formModalApi.setData(row).open();
+}
+
+function onCreate() {
+  formModalApi.setData({}).open();
+}
+
+async function onDelete(row: SystemNoticeApi.SystemNotice) {
+  try {
+    await deleteNotice(String(row.noticeId));
+    message.success($t('ui.actionMessage.deleteSuccess', [row.noticeTitle]));
+    gridApi.query();
+  } catch {}
+}
 </script>
 
 <template>
   <Page auto-content-height>
-    <FormModal @success="onRefresh" />
+    <FormModal @success="gridApi.query()" />
     <Grid :table-title="$t('system.notice.list')">
       <template #toolbar-tools>
         <Button type="primary" @click="onCreate">
@@ -139,7 +100,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         <Button
           :disabled="editDisabled"
           style="margin-left: 8px"
-          @click="onToolbarEdit"
+          @click="onToolbarEdit(onEdit)"
         >
           {{ $t('common.edit') }}
         </Button>

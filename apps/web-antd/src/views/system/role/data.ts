@@ -2,6 +2,7 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { SystemRoleApi } from '#/api';
 
+import { operationColumn, statusColumn, statusSelectField } from '#/composables/useDataHelper';
 import { $t } from '#/locales';
 
 export function useFormSchema(): VbenFormSchema[] {
@@ -60,18 +61,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
       fieldName: 'roleName',
       label: $t('system.role.roleName'),
     },
-    {
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [
-          { label: $t('common.enabled'), value: '0' },
-          { label: $t('common.disabled'), value: '1' },
-        ],
-      },
-      fieldName: 'status',
-      label: $t('system.role.status'),
-    },
+    statusSelectField($t('system.role.status')),
     {
       component: 'Input',
       fieldName: 'remark',
@@ -107,15 +97,7 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
       title: $t('system.role.roleSort'),
       width: 200,
     },
-    {
-      cellRender: {
-        attrs: { beforeChange: onStatusChange },
-        name: onStatusChange ? 'CellSwitch' : 'CellTag',
-      },
-      field: 'status',
-      title: $t('system.role.status'),
-      width: 100,
-    },
+    statusColumn($t('system.role.status'), onStatusChange),
     {
       field: 'remark',
       minWidth: 100,
@@ -126,31 +108,18 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
       title: $t('system.role.createTime'),
       width: 200,
     },
-    {
-      align: 'right',
-      field: 'operation',
-      fixed: 'right',
-      headerAlign: 'center',
-      showOverflow: false,
-      title: $t('system.role.operation'),
-      width: 180,
-      cellRender: {
-        name: 'CellOperation',
-        attrs: {
-          onClick: onActionClick,
-          nameField: 'roleName',
-          maxInline: 2, // 最多显示2个内联按钮，其余放入"更多"
-        },
-        options: [
-          { code: 'edit', text: $t('common.edit') },
-          { code: 'delete', text: $t('common.delete') },
-          {
-            code: 'allocateDataScope',
-            text: $t('system.role.allocateDataScope'),
-          },
-          { code: 'allocateUser', text: $t('system.role.allocateUser') },
-        ],
-      },
-    },
+    operationColumn(
+      $t('system.role.operation'),
+      onActionClick,
+      [
+        { code: 'edit', text: $t('common.edit') },
+        { code: 'delete', text: $t('common.delete') },
+        { code: 'allocateDataScope', text: $t('system.role.allocateDataScope') },
+        { code: 'allocateUser', text: $t('system.role.allocateUser') },
+      ],
+      'roleName',
+      $t('system.role.roleName'),
+      { align: 'right', maxInline: 2, width: 200 },
+    ),
   ];
 }

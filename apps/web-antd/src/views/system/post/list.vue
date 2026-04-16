@@ -5,14 +5,19 @@ import type {
 } from '#/adapter/vxe-table';
 import type { SystemPostApi } from '#/api/system/post';
 
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
-import { Button, Card, Input, message, Modal, Tree } from 'ant-design-vue';
+import { Button, Card, Input, message, Tree } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import {
+  useBatchDelete,
+  useGridSelection,
+  useStatusConfirm,
+} from '#/composables/useGridHelper';
 import { getDeptList } from '#/api/system/dept';
 import {
   changePostStatus,
@@ -30,7 +35,7 @@ const [FormModal, formModalApi] = useVbenModal({
   destroyOnClose: true,
 });
 
-// Department tree
+// Dept tree sidebar
 const deptTreeData = ref<any[]>([]);
 const deptSearchValue = ref('');
 const selectedDeptId = ref<number>();
@@ -55,107 +60,23 @@ function onDeptSelect(selectedKeys: Array<number | string>) {
   gridApi.query();
 }
 
-function onActionClick({
-  code,
-  row,
-}: OnActionClickParams<SystemPostApi.SystemPost>) {
-  if (code === 'edit') onEdit(row);
-  else if (code === 'delete') onDelete(row);
-}
+// Grid helpers
+const { deleteDisabled, editDisabled, gridEvents, onToolbarEdit } =
+  useGridSelection<SystemPostApi.SystemPost>(() => gridApi);
 
-function onRefresh() {
-  gridApi.query();
-}
+const { onBatchDelete } = useBatchDelete(
+  () => gridApi,
+  deletePost,
+  'postId',
+);
 
-function onEdit(row: SystemPostApi.SystemPost) {
-  formModalApi.setData(row).open();
-}
-
-function onToolbarEdit() {
-  const records = gridApi.grid.getCheckboxRecords();
-  if (records.length !== 1) {
-    message.warning('请选择一条数据');
-    return;
-  }
-  onEdit(records[0] as SystemPostApi.SystemPost);
-}
-
-const selectedCount = ref(0);
-const editDisabled = computed(() => selectedCount.value !== 1);
-const deleteDisabled = computed(() => selectedCount.value === 0);
-
-function onSelectionChange() {
-  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
-}
-
-function onCreate() {
-  formModalApi.setData({ deptId: selectedDeptId.value }).open();
-}
-
-async function onDelete(row: SystemPostApi.SystemPost) {
-  try {
-    await deletePost(String(row.postId));
-    message.success($t('ui.actionMessage.deleteSuccess', [row.postName]));
-    onRefresh();
-  } catch {}
-}
-
-async function onStatusChange(
-  newStatus: string,
-  row: SystemPostApi.SystemPost,
-) {
-  const statusText = newStatus === '0' ? '启用' : '停用';
-  return new Promise((resolve) => {
-    Modal.confirm({
-      title: '确认操作',
-      content: `确认要${statusText}岗位"${row.postName}"吗？`,
-      onOk: async () => {
-        await changePostStatus({ postId: row.postId, status: newStatus });
-        message.success(`${statusText}成功`);
-        resolve(true);
-      },
-      onCancel: () => {
-        resolve(false);
-      },
-    });
-  });
-}
-
-async function onBatchDelete() {
-  const records = gridApi.grid.getCheckboxRecords();
-  if (records.length === 0) {
-    message.warning('请至少选择一条记录');
-    return;
-  }
-  Modal.confirm({
-    title: '确认删除',
-    content: `确认要删除选中的${records.length}条记录吗？`,
-    onOk: async () => {
-      const postIds = records
-        .map((r: SystemPostApi.SystemPost) => r.postId)
-        .join(',');
-      await deletePost(postIds);
-      message.success('删除成功');
-      onRefresh();
-    },
-  });
-}
-
-async function onExport() {
-  const formValues = await gridApi.formApi.getValues();
-  const params: any = { ...formValues };
-  if (selectedDeptId.value) {
-    params.deptId = selectedDeptId.value;
-  }
-  await exportPost(params);
-  message.success('导出成功');
-}
+const { onStatusChange } = useStatusConfirm<SystemPostApi.SystemPost>(
+  ({ id, status }) => changePostStatus({ postId: id, status }),
+  { idField: 'postId', nameField: 'postName' },
+);
 
 const [Grid, gridApi] = useVbenVxeGrid({
-  gridEvents: {
-    checkboxChange: onSelectionChange,
-    checkboxAll: onSelectionChange,
-  },
+  gridEvents,
   formOptions: {
     schema: useGridFormSchema(),
     submitOnChange: true,
@@ -165,9 +86,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     columns: useColumns(onActionClick, onStatusChange),
     height: 'auto',
     keepSource: true,
-    pagerConfig: {
-      enabled: true,
-    },
+    pagerConfig: { enabled: true },
     proxyConfig: {
       ajax: {
         query: async ({ page }, formValues) => {
@@ -183,18 +102,44 @@ const [Grid, gridApi] = useVbenVxeGrid({
         },
       },
     },
-    rowConfig: {
-      keyField: 'postId',
-    },
-    toolbarConfig: {
-      custom: true,
-      export: false,
-      refresh: true,
-      search: true,
-      zoom: true,
-    },
+    rowConfig: { keyField: 'postId' },
+    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<SystemPostApi.SystemPost>,
 });
+
+function onActionClick({
+  code,
+  row,
+}: OnActionClickParams<SystemPostApi.SystemPost>) {
+  if (code === 'edit') onEdit(row);
+  else if (code === 'delete') onDelete(row);
+}
+
+function onEdit(row: SystemPostApi.SystemPost) {
+  formModalApi.setData(row).open();
+}
+
+function onCreate() {
+  formModalApi.setData({ deptId: selectedDeptId.value }).open();
+}
+
+async function onDelete(row: SystemPostApi.SystemPost) {
+  try {
+    await deletePost(String(row.postId));
+    message.success($t('ui.actionMessage.deleteSuccess', [row.postName]));
+    gridApi.query();
+  } catch {}
+}
+
+async function onExport() {
+  const formValues = await gridApi.formApi.getValues();
+  const params: any = { ...formValues };
+  if (selectedDeptId.value) {
+    params.deptId = selectedDeptId.value;
+  }
+  await exportPost(params);
+  message.success('导出成功');
+}
 
 onMounted(() => {
   loadDeptTree();
@@ -203,9 +148,8 @@ onMounted(() => {
 
 <template>
   <Page auto-content-height>
-    <FormModal @success="onRefresh" />
+    <FormModal @success="gridApi.query()" />
     <div class="flex h-full gap-2">
-      <!-- Left dept tree sidebar -->
       <Card
         class="w-[260px] shrink-0 overflow-auto"
         :body-style="{ padding: '12px' }"
@@ -224,7 +168,6 @@ onMounted(() => {
           @select="onDeptSelect"
         />
       </Card>
-      <!-- Right post list -->
       <div class="flex-1">
         <Grid :table-title="$t('system.post.list')">
           <template #toolbar-tools>
@@ -235,7 +178,7 @@ onMounted(() => {
             <Button
               :disabled="editDisabled"
               style="margin-left: 8px"
-              @click="onToolbarEdit"
+              @click="onToolbarEdit(onEdit)"
             >
               {{ $t('common.edit') }}
             </Button>

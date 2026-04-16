@@ -5,15 +5,18 @@ import type {
 } from '#/adapter/vxe-table';
 import type { SystemOssApi } from '#/api/system/oss';
 
-import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
-import { Button, message, Modal, Upload } from 'ant-design-vue';
+import { Button, message, Upload } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import {
+  useBatchDelete,
+  useGridSelection,
+} from '#/composables/useGridHelper';
 import {
   deleteOss,
   downloadOss,
@@ -26,9 +29,43 @@ import { useColumns, useGridFormSchema } from './data';
 
 const router = useRouter();
 
-function onOpenConfig() {
-  router.push({ name: 'SystemOssConfig' });
-}
+const { deleteDisabled, gridEvents } =
+  useGridSelection<SystemOssApi.SystemOss>(() => gridApi);
+
+const { onBatchDelete } = useBatchDelete(
+  () => gridApi,
+  deleteOss,
+  'ossId',
+);
+
+const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents,
+  formOptions: {
+    schema: useGridFormSchema(),
+    submitOnChange: true,
+    submitOnEnter: true,
+    fieldMappingTime: [['createTime', ['beginTime', 'endTime']]],
+  },
+  gridOptions: {
+    columns: useColumns(onActionClick),
+    height: 'auto',
+    keepSource: true,
+    pagerConfig: { enabled: true },
+    proxyConfig: {
+      ajax: {
+        query: async ({ page }, formValues) => {
+          return await getOssList({
+            pageNum: page.currentPage,
+            pageSize: page.pageSize,
+            ...formValues,
+          });
+        },
+      },
+    },
+    rowConfig: { keyField: 'ossId' },
+    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
+  } as VxeTableGridOptions<SystemOssApi.SystemOss>,
+});
 
 function onActionClick({
   code,
@@ -36,17 +73,6 @@ function onActionClick({
 }: OnActionClickParams<SystemOssApi.SystemOss>) {
   if (code === 'download') onDownload(row);
   else if (code === 'delete') onDelete(row);
-}
-
-function onRefresh() {
-  gridApi.query();
-}
-
-const selectedCount = ref(0);
-const deleteDisabled = computed(() => selectedCount.value === 0);
-
-function onSelectionChange() {
-  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
 }
 
 async function onDownload(row: SystemOssApi.SystemOss) {
@@ -60,28 +86,8 @@ async function onDelete(row: SystemOssApi.SystemOss) {
   try {
     await deleteOss(String(row.ossId));
     message.success($t('ui.actionMessage.deleteSuccess', [row.originalName]));
-    onRefresh();
+    gridApi.query();
   } catch {}
-}
-
-async function onBatchDelete() {
-  const records = gridApi.grid.getCheckboxRecords();
-  if (records.length === 0) {
-    message.warning('请至少选择一条记录');
-    return;
-  }
-  Modal.confirm({
-    title: '确认删除',
-    content: `确认要删除选中的${records.length}条记录吗？`,
-    onOk: async () => {
-      const ossIds = records
-        .map((r: SystemOssApi.SystemOss) => r.ossId)
-        .join(',');
-      await deleteOss(ossIds);
-      message.success('删除成功');
-      onRefresh();
-    },
-  });
 }
 
 function onUpload(info: { file: File }) {
@@ -89,51 +95,9 @@ function onUpload(info: { file: File }) {
   formData.append('file', info.file);
   uploadOssFile(formData).then(() => {
     message.success('上传成功');
-    onRefresh();
+    gridApi.query();
   });
 }
-
-const [Grid, gridApi] = useVbenVxeGrid({
-  gridEvents: {
-    checkboxChange: onSelectionChange,
-    checkboxAll: onSelectionChange,
-  },
-  formOptions: {
-    schema: useGridFormSchema(),
-    submitOnChange: true,
-    submitOnEnter: true,
-    fieldMappingTime: [['createTime', ['beginTime', 'endTime']]],
-  },
-  gridOptions: {
-    columns: useColumns(onActionClick),
-    height: 'auto',
-    keepSource: true,
-    pagerConfig: {
-      enabled: true,
-    },
-    proxyConfig: {
-      ajax: {
-        query: async ({ page }, formValues) => {
-          return await getOssList({
-            pageNum: page.currentPage,
-            pageSize: page.pageSize,
-            ...formValues,
-          });
-        },
-      },
-    },
-    rowConfig: {
-      keyField: 'ossId',
-    },
-    toolbarConfig: {
-      custom: true,
-      export: false,
-      refresh: true,
-      search: true,
-      zoom: true,
-    },
-  } as VxeTableGridOptions<SystemOssApi.SystemOss>,
-});
 </script>
 
 <template>
@@ -154,7 +118,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         >
           {{ $t('common.delete') }}
         </Button>
-        <Button style="margin-left: 8px" @click="onOpenConfig">
+        <Button style="margin-left: 8px" @click="router.push({ name: 'SystemOssConfig' })">
           {{ $t('system.oss.configTitle') }}
         </Button>
       </template>

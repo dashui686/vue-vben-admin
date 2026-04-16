@@ -8,6 +8,14 @@ import { z } from '#/adapter/form';
 import { getMenuTreeselect } from '#/api/system/menu';
 import { $t } from '#/locales';
 
+import {
+  operationColumn,
+  remarkField,
+  statusColumn,
+  statusRadioField,
+  statusSelectField,
+} from '#/composables/useDataHelper';
+
 /**
  * 搜索表单配置
  */
@@ -21,19 +29,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: '请输入套餐名称',
       },
     },
-    {
-      component: 'Select',
-      fieldName: 'status',
-      label: $t('system.tenantPackage.status'),
-      componentProps: {
-        allowClear: true,
-        placeholder: '请选择状态',
-        options: [
-          { label: $t('common.enabled'), value: '0' },
-          { label: $t('common.disabled'), value: '1' },
-        ],
-      },
-    },
+    statusSelectField($t('system.tenantPackage.status')),
   ];
 }
 
@@ -75,29 +71,8 @@ export function useFormSchema(): VbenFormSchema[] {
       label: $t('system.tenantPackage.menuCheckStrictly'),
       defaultValue: true,
     },
-    {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
-        options: [
-          { label: $t('common.enabled'), value: '0' },
-          { label: $t('common.disabled'), value: '1' },
-        ],
-        optionType: 'button',
-      },
-      defaultValue: '0',
-      fieldName: 'status',
-      label: $t('system.tenantPackage.status'),
-    },
-    {
-      component: 'Textarea',
-      fieldName: 'remark',
-      label: $t('system.tenantPackage.remark'),
-      componentProps: {
-        placeholder: '请输入备注',
-        rows: 3,
-      },
-    },
+    statusRadioField($t('system.tenantPackage.status')),
+    remarkField($t('system.tenantPackage.remark')),
   ];
 }
 
@@ -123,15 +98,7 @@ export function useColumns(
       title: $t('system.tenantPackage.packageName'),
       minWidth: 150,
     },
-    {
-      cellRender: {
-        attrs: { beforeChange: onStatusChange },
-        name: onStatusChange ? 'CellSwitch' : 'CellTag',
-      },
-      field: 'status',
-      title: $t('system.tenantPackage.status'),
-      width: 100,
-    },
+    statusColumn($t('system.tenantPackage.status'), onStatusChange),
     {
       field: 'remark',
       title: $t('system.tenantPackage.remark'),
@@ -142,31 +109,15 @@ export function useColumns(
       title: $t('system.tenantPackage.createTime'),
       width: 180,
     },
-    {
-      align: 'center',
-      cellRender: {
-        name: 'CellOperation',
-        attrs: {
-          nameField: 'packageName',
-          nameTitle: $t('system.tenantPackage.name'),
-          onClick: onActionClick,
-        },
-        options: [
-          {
-            code: 'edit',
-            text: $t('common.edit'),
-          },
-          {
-            code: 'delete',
-            text: $t('common.delete'),
-          },
-        ],
-      },
-      field: 'operation',
-      fixed: 'right',
-      headerAlign: 'center',
-      showOverflow: false,
-      title: $t('system.tenantPackage.operation'),
-    },
+    operationColumn(
+      $t('system.tenantPackage.operation'),
+      onActionClick,
+      [
+        { code: 'edit', text: $t('common.edit') },
+        { code: 'delete', text: $t('common.delete') },
+      ],
+      'packageName',
+      $t('system.tenantPackage.name'),
+    ),
   ];
 }

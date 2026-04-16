@@ -8,6 +8,14 @@ import { z } from '#/adapter/form';
 import { getDeptTree } from '#/api/system/post';
 import { $t } from '#/locales';
 
+import {
+  operationColumn,
+  remarkField,
+  statusColumn,
+  statusRadioField,
+  statusSelectField,
+} from '#/composables/useDataHelper';
+
 /**
  * 搜索表单配置
  */
@@ -29,19 +37,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: '请输入岗位名称',
       },
     },
-    {
-      component: 'Select',
-      fieldName: 'status',
-      label: $t('system.post.status'),
-      componentProps: {
-        allowClear: true,
-        placeholder: '请选择状态',
-        options: [
-          { label: $t('common.enabled'), value: '0' },
-          { label: $t('common.disabled'), value: '1' },
-        ],
-      },
-    },
+    statusSelectField($t('system.post.status')),
   ];
 }
 
@@ -114,29 +110,8 @@ export function useFormSchema(): VbenFormSchema[] {
         maxlength: 100,
       },
     },
-    {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
-        options: [
-          { label: $t('common.enabled'), value: '0' },
-          { label: $t('common.disabled'), value: '1' },
-        ],
-        optionType: 'button',
-      },
-      defaultValue: '0',
-      fieldName: 'status',
-      label: $t('system.post.status'),
-    },
-    {
-      component: 'Textarea',
-      fieldName: 'remark',
-      label: $t('system.post.remark'),
-      componentProps: {
-        placeholder: '请输入备注',
-        rows: 3,
-      },
-    },
+    statusRadioField($t('system.post.status')),
+    remarkField($t('system.post.remark')),
   ];
 }
 
@@ -178,45 +153,21 @@ export function useColumns(
       width: 100,
       align: 'center',
     },
-    {
-      cellRender: {
-        attrs: { beforeChange: onStatusChange },
-        name: onStatusChange ? 'CellSwitch' : 'CellTag',
-      },
-      field: 'status',
-      title: $t('system.post.status'),
-      width: 100,
-    },
+    statusColumn($t('system.post.status'), onStatusChange),
     {
       field: 'createTime',
       title: $t('system.post.createTime'),
       width: 180,
     },
-    {
-      align: 'center',
-      cellRender: {
-        name: 'CellOperation',
-        attrs: {
-          nameField: 'postName',
-          nameTitle: $t('system.post.name'),
-          onClick: onActionClick,
-        },
-        options: [
-          {
-            code: 'edit',
-            text: $t('common.edit'),
-          },
-          {
-            code: 'delete',
-            text: $t('common.delete'),
-          },
-        ],
-      },
-      field: 'operation',
-      fixed: 'right',
-      headerAlign: 'center',
-      showOverflow: false,
-      title: $t('system.post.operation'),
-    },
+    operationColumn(
+      $t('system.post.operation'),
+      onActionClick,
+      [
+        { code: 'edit', text: $t('common.edit') },
+        { code: 'delete', text: $t('common.delete') },
+      ],
+      'postName',
+      $t('system.post.name'),
+    ),
   ];
 }

@@ -8,6 +8,13 @@ import { z } from '#/adapter/form';
 import { getDeptOptionSelect } from '#/api/system/dept';
 import { getPostOptionSelect } from '#/api/system/post';
 import { getRoleOptionselect } from '#/api/system/role';
+import {
+  operationColumn,
+  remarkField,
+  statusColumn,
+  statusRadioField,
+  statusSelectField,
+} from '#/composables/useDataHelper';
 import { $t } from '#/locales';
 
 /**
@@ -31,19 +38,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: '请输入手机号码',
       },
     },
-    {
-      component: 'Select',
-      fieldName: 'status',
-      label: $t('system.user.status'),
-      componentProps: {
-        allowClear: true,
-        placeholder: '请选择状态',
-        options: [
-          { label: $t('common.enabled'), value: '0' },
-          { label: $t('common.disabled'), value: '1' },
-        ],
-      },
-    },
+    statusSelectField($t('system.user.status')),
     {
       component: 'RangePicker',
       fieldName: 'dateRange',
@@ -179,20 +174,7 @@ export function useFormSchema(): VbenFormSchema[] {
       fieldName: 'sex',
       label: $t('system.user.sex'),
     },
-    {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
-        options: [
-          { label: $t('common.enabled'), value: '0' },
-          { label: $t('common.disabled'), value: '1' },
-        ],
-        optionType: 'button',
-      },
-      defaultValue: '0',
-      fieldName: 'status',
-      label: $t('system.user.status'),
-    },
+    statusRadioField($t('system.user.status')),
     {
       component: 'ApiSelect',
       fieldName: 'roleIds',
@@ -217,15 +199,7 @@ export function useFormSchema(): VbenFormSchema[] {
         placeholder: '请选择岗位',
       },
     },
-    {
-      component: 'Textarea',
-      fieldName: 'remark',
-      label: $t('system.user.remark'),
-      componentProps: {
-        placeholder: '请输入备注',
-        rows: 3,
-      },
-    },
+    remarkField($t('system.user.remark')),
   ];
 }
 
@@ -265,55 +239,24 @@ export function useColumns(
       title: $t('system.user.phonenumber'),
       width: 130,
     },
-    {
-      cellRender: {
-        attrs: { beforeChange: onStatusChange },
-        name: onStatusChange ? 'CellSwitch' : 'CellTag',
-      },
-      field: 'status',
-      title: $t('system.user.status'),
-      width: 100,
-    },
+    statusColumn($t('system.user.status'), onStatusChange),
     {
       field: 'createTime',
       title: $t('system.user.createTime'),
       width: 180,
     },
-    {
-      align: 'center',
-      cellRender: {
-        name: 'CellOperation',
-        attrs: {
-          nameField: 'userName',
-          nameTitle: $t('system.user.name'),
-          onClick: onActionClick,
-          maxInline: 2, // 最多显示2个内联按钮，其余放入"更多"
-        },
-        options: [
-          {
-            code: 'edit',
-            text: $t('common.edit'),
-          },
-          {
-            code: 'resetPwd',
-            text: $t('system.user.resetPwd'),
-          },
-          {
-            code: 'authRole',
-            text: $t('system.user.authRole'),
-          },
-          {
-            code: 'delete',
-            text: $t('common.delete'),
-          },
-        ],
-      },
-      field: 'operation',
-      fixed: 'right',
-      width: 180,
-      headerAlign: 'center',
-      showOverflow: false,
-      title: $t('system.user.operation'),
-    },
+    operationColumn(
+      $t('system.user.operation'),
+      onActionClick,
+      [
+        { code: 'edit', text: $t('common.edit') },
+        { code: 'resetPwd', text: $t('system.user.resetPwd') },
+        { code: 'authRole', text: $t('system.user.authRole') },
+        { code: 'delete', text: $t('common.delete') },
+      ],
+      'userName',
+      $t('system.user.name'),
+      { maxInline: 2, width: 200 },
+    ),
   ];
 }

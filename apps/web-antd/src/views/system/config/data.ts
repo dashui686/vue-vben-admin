@@ -7,6 +7,8 @@ import type { SystemConfigApi } from '#/api/system/config';
 import { z } from '#/adapter/form';
 import { $t } from '#/locales';
 
+import { operationColumn, remarkField } from '#/composables/useDataHelper';
+
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
@@ -75,12 +77,7 @@ export function useFormSchema(): VbenFormSchema[] {
       fieldName: 'configType',
       label: $t('system.config.configType'),
     },
-    {
-      component: 'Textarea',
-      fieldName: 'remark',
-      label: $t('system.config.remark'),
-      componentProps: { placeholder: '请输入备注', rows: 3 },
-    },
+    remarkField($t('system.config.remark')),
   ];
 }
 
@@ -109,25 +106,15 @@ export function useColumns(
     },
     { field: 'remark', title: $t('system.config.remark'), minWidth: 120 },
     { field: 'createTime', title: $t('system.config.createTime'), width: 180 },
-    {
-      align: 'center',
-      cellRender: {
-        name: 'CellOperation',
-        attrs: {
-          nameField: 'configName',
-          nameTitle: $t('system.config.name'),
-          onClick: onActionClick,
-        },
-        options: [
-          { code: 'edit', text: $t('common.edit') },
-          { code: 'delete', text: $t('common.delete') },
-        ],
-      },
-      field: 'operation',
-      fixed: 'right',
-      headerAlign: 'center',
-      showOverflow: false,
-      title: $t('system.config.operation'),
-    },
+    operationColumn(
+      $t('system.config.operation'),
+      onActionClick,
+      [
+        { code: 'edit', text: $t('common.edit') },
+        { code: 'delete', text: $t('common.delete') },
+      ],
+      'configName',
+      $t('system.config.name'),
+    ),
   ];
 }

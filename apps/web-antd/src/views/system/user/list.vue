@@ -5,7 +5,7 @@ import type {
 } from '#/adapter/vxe-table';
 import type { SystemUserApi } from '#/api/system/user';
 
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page, useVbenModal } from '@vben/common-ui';
@@ -14,6 +14,10 @@ import { Plus } from '@vben/icons';
 import { Button, Card, Input, message, Modal, Tree } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import {
+  useBatchDelete,
+  useGridSelection,
+} from '#/composables/useGridHelper';
 import { getDeptList } from '#/api/system/dept';
 import {
   changeUserStatus,
@@ -45,7 +49,7 @@ const [ImportModal, importModalApi] = useVbenModal({
   destroyOnClose: true,
 });
 
-// 部门树相关
+// Dept tree sidebar
 const deptTreeData = ref<any[]>([]);
 const deptSearchValue = ref('');
 const selectedDeptId = ref<number>();
@@ -70,14 +74,61 @@ function onDeptSelect(selectedKeys: Array<number | string>) {
   gridApi.query();
 }
 
-// 用户操作
+// Grid helpers
+const { deleteDisabled, editDisabled, gridEvents, onToolbarEdit } =
+  useGridSelection<SystemUserApi.SystemUser>(() => gridApi);
+
+const { onBatchDelete } = useBatchDelete(
+  () => gridApi,
+  deleteUser,
+  'userId',
+);
+
+const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents,
+  formOptions: {
+    schema: useGridFormSchema(),
+    submitOnChange: true,
+    submitOnEnter: true,
+  },
+  gridOptions: {
+    columns: useColumns(onActionClick, onStatusChange),
+    height: 'auto',
+    keepSource: true,
+    pagerConfig: { enabled: true },
+    proxyConfig: {
+      ajax: {
+        query: async ({ page }, formValues) => {
+          const params: any = {
+            pageNum: page.currentPage,
+            pageSize: page.pageSize,
+            ...formValues,
+          };
+          if (selectedDeptId.value) {
+            params.deptId = selectedDeptId.value;
+          }
+          if (formValues?.dateRange?.length === 2) {
+            params.beginTime = formValues.dateRange[0];
+            params.endTime = formValues.dateRange[1];
+          }
+          delete params.dateRange;
+          return await getUserList(params);
+        },
+      },
+    },
+    rowConfig: { keyField: 'userId' },
+    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
+  } as VxeTableGridOptions<SystemUserApi.SystemUser>,
+});
+
+// Action handlers
 function onActionClick({
   code,
   row,
 }: OnActionClickParams<SystemUserApi.SystemUser>) {
   switch (code) {
     case 'authRole': {
-      onAuthRole(row);
+      router.push(`/system/user-auth/role/${row.userId}`);
       break;
     }
     case 'delete': {
@@ -89,14 +140,12 @@ function onActionClick({
       break;
     }
     case 'resetPwd': {
-      onResetPwd(row);
+      resetPwdModalApi
+        .setData({ userId: row.userId, userName: row.userName })
+        .open();
       break;
     }
   }
-}
-
-function onRefresh() {
-  gridApi.query();
 }
 
 function onEdit(row: SystemUserApi.SystemUser) {
@@ -107,77 +156,12 @@ function onCreate() {
   formModalApi.setData({ deptId: selectedDeptId.value }).open();
 }
 
-const selectedCount = ref(0);
-const editDisabled = computed(() => selectedCount.value !== 1);
-const deleteDisabled = computed(() => selectedCount.value === 0);
-
-function onSelectionChange() {
-  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
-}
-
-function onToolbarEdit() {
-  const records = gridApi.grid.getCheckboxRecords();
-  if (records.length !== 1) {
-    message.warning('请选择一条数据');
-    return;
-  }
-  onEdit(records[0] as SystemUserApi.SystemUser);
-}
-
 async function onDelete(row: SystemUserApi.SystemUser) {
   try {
     await deleteUser(String(row.userId));
     message.success($t('ui.actionMessage.deleteSuccess', [row.userName]));
-    onRefresh();
+    gridApi.query();
   } catch {}
-}
-
-function onBatchDelete() {
-  const records = gridApi.grid.getCheckboxRecords();
-  if (records.length === 0) {
-    message.warning('请选择要删除的数据');
-    return;
-  }
-  const userIds = records
-    .map((r: SystemUserApi.SystemUser) => r.userId)
-    .join(',');
-  Modal.confirm({
-    title: '系统提示',
-    content: `确认要删除选中的${records.length}条数据吗？`,
-    onOk: async () => {
-      await deleteUser(userIds);
-      message.success('删除成功');
-      onRefresh();
-    },
-  });
-}
-
-function onResetPwd(row: SystemUserApi.SystemUser) {
-  resetPwdModalApi
-    .setData({ userId: row.userId, userName: row.userName })
-    .open();
-}
-
-function onAuthRole(row: SystemUserApi.SystemUser) {
-  router.push(`/system/user-auth/role/${row.userId}`);
-}
-
-async function onExport() {
-  const formValues = await gridApi.formApi.getValues();
-  const params: any = { ...formValues };
-  if (selectedDeptId.value) {
-    params.deptId = selectedDeptId.value;
-  }
-  if (formValues?.dateRange?.length === 2) {
-    params.beginTime = formValues.dateRange[0];
-    params.endTime = formValues.dateRange[1];
-  }
-  delete params.dateRange;
-  await exportUser(params);
-}
-
-function onImport() {
-  importModalApi.open();
 }
 
 async function onStatusChange(
@@ -201,55 +185,23 @@ async function onStatusChange(
   });
 }
 
-const [Grid, gridApi] = useVbenVxeGrid({
-  gridEvents: {
-    checkboxChange: onSelectionChange,
-    checkboxAll: onSelectionChange,
-  },
-  formOptions: {
-    schema: useGridFormSchema(),
-    submitOnChange: true,
-    submitOnEnter: true,
-  },
-  gridOptions: {
-    columns: useColumns(onActionClick, onStatusChange),
-    height: 'auto',
-    keepSource: true,
-    pagerConfig: {
-      enabled: true,
-    },
-    proxyConfig: {
-      ajax: {
-        query: async ({ page }, formValues) => {
-          const params: any = {
-            pageNum: page.currentPage,
-            pageSize: page.pageSize,
-            ...formValues,
-          };
-          if (selectedDeptId.value) {
-            params.deptId = selectedDeptId.value;
-          }
-          if (formValues?.dateRange?.length === 2) {
-            params.beginTime = formValues.dateRange[0];
-            params.endTime = formValues.dateRange[1];
-          }
-          delete params.dateRange;
-          return await getUserList(params);
-        },
-      },
-    },
-    rowConfig: {
-      keyField: 'userId',
-    },
-    toolbarConfig: {
-      custom: true,
-      export: false,
-      refresh: true,
-      search: true,
-      zoom: true,
-    },
-  } as VxeTableGridOptions<SystemUserApi.SystemUser>,
-});
+async function onExport() {
+  const formValues = await gridApi.formApi.getValues();
+  const params: any = { ...formValues };
+  if (selectedDeptId.value) {
+    params.deptId = selectedDeptId.value;
+  }
+  if (formValues?.dateRange?.length === 2) {
+    params.beginTime = formValues.dateRange[0];
+    params.endTime = formValues.dateRange[1];
+  }
+  delete params.dateRange;
+  await exportUser(params);
+}
+
+function onImport() {
+  importModalApi.open();
+}
 
 onMounted(() => {
   loadDeptTree();
@@ -258,11 +210,10 @@ onMounted(() => {
 
 <template>
   <Page auto-content-height>
-    <FormModal @success="onRefresh" />
-    <ResetPwdModal @success="onRefresh" />
-    <ImportModal @success="onRefresh" />
+    <FormModal @success="gridApi.query()" />
+    <ResetPwdModal @success="gridApi.query()" />
+    <ImportModal @success="gridApi.query()" />
     <div class="flex h-full gap-2">
-      <!-- 左侧部门树 -->
       <Card
         class="w-[260px] shrink-0 overflow-auto"
         :body-style="{ padding: '12px' }"
@@ -281,7 +232,6 @@ onMounted(() => {
           @select="onDeptSelect"
         />
       </Card>
-      <!-- 右侧用户列表 -->
       <div class="flex-1">
         <Grid :table-title="$t('system.user.list')">
           <template #toolbar-tools>
@@ -290,7 +240,7 @@ onMounted(() => {
                 <Plus class="size-5" />
                 {{ $t('ui.actionTitle.create', [$t('system.user.name')]) }}
               </Button>
-              <Button :disabled="editDisabled" @click="onToolbarEdit">
+              <Button :disabled="editDisabled" @click="onToolbarEdit(onEdit)">
                 {{ $t('common.edit') }}
               </Button>
               <Button :disabled="deleteDisabled" danger @click="onBatchDelete">

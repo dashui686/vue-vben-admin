@@ -14,24 +14,17 @@ import { $t } from '#/locales';
 import { useFormSchema } from '../data';
 
 const emit = defineEmits(['success']);
-
 const [Form, formApi] = useVbenForm({
   layout: 'vertical',
   schema: useFormSchema(),
   showDefaultActions: false,
 });
-
 const currentId = ref<number | undefined>();
-
-const getTitle = computed(() => {
-  return currentId.value
+const getTitle = computed(() =>
+  currentId.value
     ? $t('ui.actionTitle.edit', [$t('system.tenant.name')])
-    : $t('ui.actionTitle.create', [$t('system.tenant.name')]);
-});
-
-function resetForm() {
-  formApi.resetForm();
-}
+    : $t('ui.actionTitle.create', [$t('system.tenant.name')]),
+);
 
 const [Modal, modalApi] = useVbenModal({
   async onConfirm() {
@@ -57,11 +50,10 @@ const [Modal, modalApi] = useVbenModal({
     if (isOpen) {
       const data = modalApi.getData<SystemTenantApi.SystemTenant>();
       formApi.resetForm();
-
       if (data?.id) {
-        const tenantData = await getTenant(data.id);
-        currentId.value = tenantData.id;
-        formApi.setValues(tenantData);
+        const detail = await getTenant(data.id);
+        currentId.value = detail.id;
+        formApi.setValues(detail);
       } else {
         currentId.value = undefined;
         formApi.setValues(data || {});
@@ -76,7 +68,7 @@ const [Modal, modalApi] = useVbenModal({
     <Form class="mx-4" />
     <template #prepend-footer>
       <div class="flex-auto">
-        <Button type="primary" danger @click="resetForm">
+        <Button type="primary" danger @click="formApi.resetForm()">
           {{ $t('common.reset') }}
         </Button>
       </div>

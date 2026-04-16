@@ -5,14 +5,16 @@ import type {
 } from '#/adapter/vxe-table';
 import type { SystemTenantPackageApi } from '#/api/system/tenantPackage';
 
-import { computed, ref } from 'vue';
-
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
-import { Button, message, Modal } from 'ant-design-vue';
+import { Button, message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import {
+  useGridSelection,
+  useStatusConfirm,
+} from '#/composables/useGridHelper';
 import {
   changeTenantPackageStatus,
   deleteTenantPackage,
@@ -28,79 +30,17 @@ const [FormModal, formModalApi] = useVbenModal({
   destroyOnClose: true,
 });
 
-function onActionClick({
-  code,
-  row,
-}: OnActionClickParams<SystemTenantPackageApi.SystemTenantPackage>) {
-  if (code === 'edit') onEdit(row);
-  else if (code === 'delete') onDelete(row);
-}
+const { editDisabled, gridEvents, onToolbarEdit } =
+  useGridSelection<SystemTenantPackageApi.SystemTenantPackage>(() => gridApi);
 
-function onRefresh() {
-  gridApi.query();
-}
-
-function onEdit(row: SystemTenantPackageApi.SystemTenantPackage) {
-  formModalApi.setData(row).open();
-}
-
-function onToolbarEdit() {
-  const records = gridApi.grid.getCheckboxRecords();
-  if (records.length !== 1) {
-    message.warning('请选择一条数据');
-    return;
-  }
-  onEdit(records[0] as SystemTenantPackageApi.SystemTenantPackage);
-}
-
-const selectedCount = ref(0);
-const editDisabled = computed(() => selectedCount.value !== 1);
-
-function onSelectionChange() {
-  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
-}
-
-function onCreate() {
-  formModalApi.setData({}).open();
-}
-
-async function onDelete(row: SystemTenantPackageApi.SystemTenantPackage) {
-  try {
-    await deleteTenantPackage(String(row.packageId));
-    message.success($t('ui.actionMessage.deleteSuccess', [row.packageName]));
-    onRefresh();
-  } catch {}
-}
-
-async function onStatusChange(
-  newStatus: string,
-  row: SystemTenantPackageApi.SystemTenantPackage,
-) {
-  const statusText = newStatus === '0' ? '启用' : '停用';
-  return new Promise((resolve) => {
-    Modal.confirm({
-      title: '确认操作',
-      content: `确认要${statusText}套餐"${row.packageName}"吗？`,
-      onOk: async () => {
-        await changeTenantPackageStatus({
-          packageId: row.packageId,
-          status: newStatus,
-        });
-        message.success(`${statusText}成功`);
-        resolve(true);
-      },
-      onCancel: () => {
-        resolve(false);
-      },
-    });
-  });
-}
+const { onStatusChange } =
+  useStatusConfirm<SystemTenantPackageApi.SystemTenantPackage>(
+    ({ id, status }) => changeTenantPackageStatus({ packageId: id, status }),
+    { idField: 'packageId', nameField: 'packageName' },
+  );
 
 const [Grid, gridApi] = useVbenVxeGrid({
-  gridEvents: {
-    checkboxChange: onSelectionChange,
-    checkboxAll: onSelectionChange,
-  },
+  gridEvents,
   formOptions: {
     schema: useGridFormSchema(),
     submitOnChange: true,
@@ -110,9 +50,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     columns: useColumns(onActionClick, onStatusChange),
     height: 'auto',
     keepSource: true,
-    pagerConfig: {
-      enabled: true,
-    },
+    pagerConfig: { enabled: true },
     proxyConfig: {
       ajax: {
         query: async ({ page }, formValues) => {
@@ -124,23 +62,39 @@ const [Grid, gridApi] = useVbenVxeGrid({
         },
       },
     },
-    rowConfig: {
-      keyField: 'packageId',
-    },
-    toolbarConfig: {
-      custom: true,
-      export: false,
-      refresh: true,
-      search: true,
-      zoom: true,
-    },
+    rowConfig: { keyField: 'packageId' },
+    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<SystemTenantPackageApi.SystemTenantPackage>,
 });
+
+function onActionClick({
+  code,
+  row,
+}: OnActionClickParams<SystemTenantPackageApi.SystemTenantPackage>) {
+  if (code === 'edit') onEdit(row);
+  else if (code === 'delete') onDelete(row);
+}
+
+function onEdit(row: SystemTenantPackageApi.SystemTenantPackage) {
+  formModalApi.setData(row).open();
+}
+
+function onCreate() {
+  formModalApi.setData({}).open();
+}
+
+async function onDelete(row: SystemTenantPackageApi.SystemTenantPackage) {
+  try {
+    await deleteTenantPackage(String(row.packageId));
+    message.success($t('ui.actionMessage.deleteSuccess', [row.packageName]));
+    gridApi.query();
+  } catch {}
+}
 </script>
 
 <template>
   <Page auto-content-height>
-    <FormModal @success="onRefresh" />
+    <FormModal @success="gridApi.query()" />
     <Grid :table-title="$t('system.tenantPackage.list')">
       <template #toolbar-tools>
         <Button type="primary" @click="onCreate">
@@ -150,7 +104,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         <Button
           :disabled="editDisabled"
           style="margin-left: 8px"
-          @click="onToolbarEdit"
+          @click="onToolbarEdit(onEdit)"
         >
           {{ $t('common.edit') }}
         </Button>

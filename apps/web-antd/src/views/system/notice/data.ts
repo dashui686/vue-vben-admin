@@ -5,6 +5,7 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { SystemNoticeApi } from '#/api/system/notice';
 
 import { z } from '#/adapter/form';
+import { operationColumn } from '#/composables/useDataHelper';
 import { $t } from '#/locales';
 
 const noticeTypeOptions = [
@@ -116,25 +117,15 @@ export function useColumns(
     },
     { field: 'createByName', title: $t('system.notice.createBy'), width: 120 },
     { field: 'createTime', title: $t('system.notice.createTime'), width: 180 },
-    {
-      align: 'center',
-      cellRender: {
-        name: 'CellOperation',
-        attrs: {
-          nameField: 'noticeTitle',
-          nameTitle: $t('system.notice.name'),
-          onClick: onActionClick,
-        },
-        options: [
-          { code: 'edit', text: $t('common.edit') },
-          { code: 'delete', text: $t('common.delete') },
-        ],
-      },
-      field: 'operation',
-      fixed: 'right',
-      headerAlign: 'center',
-      showOverflow: false,
-      title: $t('system.notice.operation'),
-    },
+    operationColumn(
+      $t('system.notice.operation'),
+      onActionClick,
+      [
+        { code: 'edit', text: $t('common.edit') },
+        { code: 'delete', text: $t('common.delete') },
+      ],
+      'noticeTitle',
+      $t('system.notice.name'),
+    ),
   ];
 }

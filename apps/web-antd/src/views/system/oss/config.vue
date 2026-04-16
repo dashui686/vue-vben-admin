@@ -5,15 +5,19 @@ import type {
 } from '#/adapter/vxe-table';
 import type { SystemOssApi } from '#/api/system/oss';
 
-import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 import { ArrowLeft, Plus } from '@vben/icons';
 
-import { Button, message, Modal } from 'ant-design-vue';
+import { Button, message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import {
+  useBatchDelete,
+  useGridSelection,
+  useStatusConfirm,
+} from '#/composables/useGridHelper';
 import {
   changeOssConfigStatus,
   deleteOssConfig,
@@ -26,109 +30,27 @@ import ConfigForm from './modules/config-form.vue';
 
 const router = useRouter();
 
-function onBack() {
-  router.push({ name: 'SystemOss' });
-}
-
 const [FormModal, formModalApi] = useVbenModal({
   connectedComponent: ConfigForm,
   destroyOnClose: true,
 });
 
-function onActionClick({
-  code,
-  row,
-}: OnActionClickParams<SystemOssApi.SystemOssConfig>) {
-  if (code === 'edit') onEdit(row);
-  else if (code === 'delete') onDelete(row);
-}
+const { deleteDisabled, editDisabled, gridEvents, onToolbarEdit } =
+  useGridSelection<SystemOssApi.SystemOssConfig>(() => gridApi);
 
-function onRefresh() {
-  gridApi.query();
-}
+const { onBatchDelete } = useBatchDelete(
+  () => gridApi,
+  deleteOssConfig,
+  'ossConfigId',
+);
 
-function onEdit(row: SystemOssApi.SystemOssConfig) {
-  formModalApi.setData(row).open();
-}
-
-function onToolbarEdit() {
-  const records = gridApi.grid.getCheckboxRecords();
-  if (records.length !== 1) {
-    message.warning('请选择一条数据');
-    return;
-  }
-  onEdit(records[0] as SystemOssApi.SystemOssConfig);
-}
-
-const selectedCount = ref(0);
-const editDisabled = computed(() => selectedCount.value !== 1);
-const deleteDisabled = computed(() => selectedCount.value === 0);
-
-function onSelectionChange() {
-  selectedCount.value = gridApi.grid.getCheckboxRecords().length;
-}
-
-function onCreate() {
-  formModalApi.setData({}).open();
-}
-
-async function onDelete(row: SystemOssApi.SystemOssConfig) {
-  try {
-    await deleteOssConfig(String(row.ossConfigId));
-    message.success($t('ui.actionMessage.deleteSuccess', [row.configKey]));
-    onRefresh();
-  } catch {}
-}
-
-async function onStatusChange(
-  newStatus: string,
-  row: SystemOssApi.SystemOssConfig,
-) {
-  const statusText = newStatus === '0' ? '启用' : '停用';
-  return new Promise((resolve) => {
-    Modal.confirm({
-      title: '确认操作',
-      content: `确认要${statusText}配置"${row.configKey}"吗？`,
-      onOk: async () => {
-        await changeOssConfigStatus({
-          ossConfigId: row.ossConfigId,
-          status: newStatus,
-        });
-        message.success(`${statusText}成功`);
-        resolve(true);
-      },
-      onCancel: () => {
-        resolve(false);
-      },
-    });
-  });
-}
-
-async function onBatchDelete() {
-  const records = gridApi.grid.getCheckboxRecords();
-  if (records.length === 0) {
-    message.warning('请至少选择一条记录');
-    return;
-  }
-  Modal.confirm({
-    title: '确认删除',
-    content: `确认要删除选中的${records.length}条记录吗？`,
-    onOk: async () => {
-      const ids = records
-        .map((r: SystemOssApi.SystemOssConfig) => r.ossConfigId)
-        .join(',');
-      await deleteOssConfig(ids);
-      message.success('删除成功');
-      onRefresh();
-    },
-  });
-}
+const { onStatusChange } = useStatusConfirm<SystemOssApi.SystemOssConfig>(
+  ({ id, status }) => changeOssConfigStatus({ ossConfigId: id, status }),
+  { idField: 'ossConfigId', nameField: 'configKey' },
+);
 
 const [Grid, gridApi] = useVbenVxeGrid({
-  gridEvents: {
-    checkboxChange: onSelectionChange,
-    checkboxAll: onSelectionChange,
-  },
+  gridEvents,
   formOptions: {
     schema: useConfigGridFormSchema(),
     submitOnChange: true,
@@ -138,9 +60,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     columns: useConfigColumns(onActionClick, onStatusChange),
     height: 'auto',
     keepSource: true,
-    pagerConfig: {
-      enabled: true,
-    },
+    pagerConfig: { enabled: true },
     proxyConfig: {
       ajax: {
         query: async ({ page }, formValues) => {
@@ -152,26 +72,42 @@ const [Grid, gridApi] = useVbenVxeGrid({
         },
       },
     },
-    rowConfig: {
-      keyField: 'ossConfigId',
-    },
-    toolbarConfig: {
-      custom: true,
-      export: false,
-      refresh: true,
-      search: true,
-      zoom: true,
-    },
+    rowConfig: { keyField: 'ossConfigId' },
+    toolbarConfig: { custom: true, export: false, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<SystemOssApi.SystemOssConfig>,
 });
+
+function onActionClick({
+  code,
+  row,
+}: OnActionClickParams<SystemOssApi.SystemOssConfig>) {
+  if (code === 'edit') onEdit(row);
+  else if (code === 'delete') onDelete(row);
+}
+
+function onEdit(row: SystemOssApi.SystemOssConfig) {
+  formModalApi.setData(row).open();
+}
+
+function onCreate() {
+  formModalApi.setData({}).open();
+}
+
+async function onDelete(row: SystemOssApi.SystemOssConfig) {
+  try {
+    await deleteOssConfig(String(row.ossConfigId));
+    message.success($t('ui.actionMessage.deleteSuccess', [row.configKey]));
+    gridApi.query();
+  } catch {}
+}
 </script>
 
 <template>
   <Page auto-content-height>
-    <FormModal @success="onRefresh" />
+    <FormModal @success="gridApi.query()" />
     <Grid :table-title="$t('system.oss.configList')">
       <template #toolbar-tools>
-        <Button @click="onBack">
+        <Button @click="router.push({ name: 'SystemOss' })">
           <ArrowLeft class="size-4" />
           返回
         </Button>
@@ -182,7 +118,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         <Button
           :disabled="editDisabled"
           style="margin-left: 8px"
-          @click="onToolbarEdit"
+          @click="onToolbarEdit(onEdit)"
         >
           {{ $t('common.edit') }}
         </Button>

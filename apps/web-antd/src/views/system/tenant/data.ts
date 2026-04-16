@@ -8,6 +8,14 @@ import { z } from '#/adapter/form';
 import { getTenantPackageSelectList } from '#/api/system/tenantPackage';
 import { $t } from '#/locales';
 
+import {
+  operationColumn,
+  remarkField,
+  statusColumn,
+  statusRadioField,
+  statusSelectField,
+} from '#/composables/useDataHelper';
+
 /**
  * 搜索表单配置
  */
@@ -29,19 +37,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: '请输入联系人',
       },
     },
-    {
-      component: 'Select',
-      fieldName: 'status',
-      label: $t('system.tenant.status'),
-      componentProps: {
-        allowClear: true,
-        placeholder: '请选择状态',
-        options: [
-          { label: $t('common.enabled'), value: '0' },
-          { label: $t('common.disabled'), value: '1' },
-        ],
-      },
-    },
+    statusSelectField($t('system.tenant.status')),
   ];
 }
 
@@ -169,29 +165,8 @@ export function useFormSchema(): VbenFormSchema[] {
         rows: 3,
       },
     },
-    {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
-        options: [
-          { label: $t('common.enabled'), value: '0' },
-          { label: $t('common.disabled'), value: '1' },
-        ],
-        optionType: 'button',
-      },
-      defaultValue: '0',
-      fieldName: 'status',
-      label: $t('system.tenant.status'),
-    },
-    {
-      component: 'Textarea',
-      fieldName: 'remark',
-      label: $t('system.tenant.remark'),
-      componentProps: {
-        placeholder: '请输入备注',
-        rows: 3,
-      },
-    },
+    statusRadioField($t('system.tenant.status')),
+    remarkField($t('system.tenant.remark')),
   ];
 }
 
@@ -238,45 +213,21 @@ export function useColumns(
       width: 100,
       align: 'center',
     },
-    {
-      cellRender: {
-        attrs: { beforeChange: onStatusChange },
-        name: onStatusChange ? 'CellSwitch' : 'CellTag',
-      },
-      field: 'status',
-      title: $t('system.tenant.status'),
-      width: 100,
-    },
+    statusColumn($t('system.tenant.status'), onStatusChange),
     {
       field: 'createTime',
       title: $t('system.tenant.createTime'),
       width: 180,
     },
-    {
-      align: 'center',
-      cellRender: {
-        name: 'CellOperation',
-        attrs: {
-          nameField: 'companyName',
-          nameTitle: $t('system.tenant.name'),
-          onClick: onActionClick,
-        },
-        options: [
-          {
-            code: 'edit',
-            text: $t('common.edit'),
-          },
-          {
-            code: 'delete',
-            text: $t('common.delete'),
-          },
-        ],
-      },
-      field: 'operation',
-      fixed: 'right',
-      headerAlign: 'center',
-      showOverflow: false,
-      title: $t('system.tenant.operation'),
-    },
+    operationColumn(
+      $t('system.tenant.operation'),
+      onActionClick,
+      [
+        { code: 'edit', text: $t('common.edit') },
+        { code: 'delete', text: $t('common.delete') },
+      ],
+      'companyName',
+      $t('system.tenant.name'),
+    ),
   ];
 }

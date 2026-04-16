@@ -4,6 +4,7 @@ import { ref, watch } from 'vue';
 import { Checkbox, Input, Modal, Radio, Spin, Tree } from 'ant-design-vue';
 
 import { allocateDataScope, getRoleDeptTree } from '#/api';
+import { getAllTreeKeys } from '#/composables/useGridHelper';
 
 const props = defineProps<{
   dataScope?: string;
@@ -18,6 +19,7 @@ const emits = defineEmits(['success', 'update:open']);
 const loadingDeptTree = ref(false);
 const deptTreeData = ref<any[]>([]);
 const checkedDeptKeys = ref<string[]>([]);
+const expandedDeptKeys = ref<string[]>([]);
 const selectedDataScope = ref<string>('1');
 const deptExpandAll = ref(false);
 const deptCheckAll = ref(false);
@@ -36,6 +38,7 @@ async function loadDeptTree() {
     const res = await getRoleDeptTree(props.roleId);
     deptTreeData.value = res.depts || [];
     checkedDeptKeys.value = (res.checkedKeys || []).map(String);
+    expandedDeptKeys.value = getAllTreeKeys(deptTreeData.value);
   } finally {
     loadingDeptTree.value = false;
   }
@@ -80,31 +83,29 @@ watch(
   },
 );
 
-function onCheck(checkedKeys: string[]) {
-  checkedDeptKeys.value = checkedKeys;
+function onExpand(keys: any[]) {
+  expandedDeptKeys.value = keys;
+  deptExpandAll.value =
+    deptTreeData.value.length > 0 &&
+    keys.length === getAllTreeKeys(deptTreeData.value).length;
 }
 
 function onDeptExpandAll(e: any) {
   const checked = (e.target as HTMLInputElement).checked;
   deptExpandAll.value = checked;
+  expandedDeptKeys.value = checked ? getAllTreeKeys(deptTreeData.value) : [];
 }
 
 function onDeptCheckAll(e: any) {
   const checked = (e.target as HTMLInputElement).checked;
   deptCheckAll.value = checked;
-  checkedDeptKeys.value = checked ? getAllKeys(deptTreeData.value) : [];
+  checkedDeptKeys.value = checked ? getAllTreeKeys(deptTreeData.value) : [];
 }
 
-function getAllKeys(nodes: any[]): string[] {
-  const keys: string[] = [];
-  for (const node of nodes) {
-    keys.push(String(node.id));
-    if (node.children?.length) {
-      keys.push(...getAllKeys(node.children));
-    }
-  }
-  return keys;
-}
+watch(checkedDeptKeys, (keys) => {
+  const allKeys = getAllTreeKeys(deptTreeData.value);
+  deptCheckAll.value = allKeys.length > 0 && keys.length === allKeys.length;
+});
 </script>
 
 <template>
@@ -149,13 +150,13 @@ function getAllKeys(nodes: any[]): string[] {
         <Spin :spinning="loadingDeptTree" wrapper-class-name="w-full">
           <div class="max-h-[300px] overflow-auto border rounded p-2">
             <Tree
+              v-model:checked-keys="checkedDeptKeys"
               :tree-data="deptTreeData"
               checkable
-              :checked-keys="checkedDeptKeys"
-              :default-expand-all="deptExpandAll"
-              @check="onCheck"
-              value-field="id"
-              label-field="label"
+              check-strictly
+              :expanded-keys="expandedDeptKeys"
+              :field-names="{ title: 'label', key: 'id', children: 'children' }"
+              @expand="onExpand"
             />
           </div>
         </Spin>
