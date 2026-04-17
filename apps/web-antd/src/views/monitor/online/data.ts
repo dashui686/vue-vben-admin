@@ -49,7 +49,7 @@ export function useColumns(
           nameTitle: '用户',
           onClick: onActionClick,
         },
-        options: [{ code: 'forceLogout', text: '强退' }],
+        options: [{ auth: 'monitor:online:forceLogout', code: 'forceLogout', text: '强退' }],
       },
       field: 'operation',
       fixed: 'right',

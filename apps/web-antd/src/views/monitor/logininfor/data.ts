@@ -79,7 +79,7 @@ export function useColumns(
           nameTitle: '日志',
           onClick: onActionClick,
         },
-        options: [{ code: 'delete', text: '删除' }],
+        options: [{ auth: 'monitor:logininfor:remove', code: 'delete', text: '删除' }],
       },
       field: 'operation',
       fixed: 'right',

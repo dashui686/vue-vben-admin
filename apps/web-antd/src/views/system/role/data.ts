@@ -101,7 +101,7 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
       title: $t('system.role.roleSort'),
       width: 200,
     },
-    statusColumn($t('system.role.status'), onStatusChange),
+    statusColumn($t('system.role.status'), onStatusChange, 'system:role:edit'),
     {
       field: 'remark',
       minWidth: 100,
@@ -116,13 +116,14 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
       $t('system.role.operation'),
       onActionClick,
       [
-        { code: 'edit', text: $t('common.edit') },
-        { code: 'delete', text: $t('common.delete') },
+        { auth: 'system:role:edit', code: 'edit', text: $t('common.edit') },
+        { auth: 'system:role:remove', code: 'delete', text: $t('common.delete') },
         {
+          auth: 'system:role:edit',
           code: 'allocateDataScope',
           text: $t('system.role.allocateDataScope'),
         },
-        { code: 'allocateUser', text: $t('system.role.allocateUser') },
+        { auth: 'system:role:edit', code: 'allocateUser', text: $t('system.role.allocateUser') },
       ],
       'roleName',
       $t('system.role.roleName'),

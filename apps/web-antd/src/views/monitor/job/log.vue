@@ -118,7 +118,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
           },
           options: [
             { code: 'detail', text: '详情' },
-            { code: 'delete', text: '删除' },
+            { auth: 'monitor:job:remove', code: 'delete', text: '删除' },
           ],
         },
         field: 'operation',
@@ -246,8 +246,8 @@ function onClean() {
   <Page auto-content-height>
     <Grid table-title="调度日志">
       <template #toolbar-tools>
-        <Button danger @click="onBatchDelete">删除</Button>
-        <Button danger style="margin-left: 8px" @click="onClean"> 清空 </Button>
+        <Button v-access:code="'monitor:job:remove'" danger @click="onBatchDelete">删除</Button>
+        <Button v-access:code="'monitor:job:remove'" danger style="margin-left: 8px" @click="onClean"> 清空 </Button>
       </template>
     </Grid>
   </Page>

@@ -87,6 +87,7 @@ const [AllocatedGrid, allocatedGridApi] = useVbenVxeGrid({
           name: 'CellOperation',
           options: [
             {
+              auth: 'system:role:edit',
               code: 'cancel',
               text: '取消授权',
               danger: true,

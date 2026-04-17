@@ -107,9 +107,9 @@ export function useDictTypeColumns(
           onClick: onActionClick,
         },
         options: [
-          { code: 'edit', text: $t('common.edit') },
+          { auth: 'system:dict:edit', code: 'edit', text: $t('common.edit') },
           { code: 'dictData', text: $t('system.dict.dictData') },
-          { code: 'delete', text: $t('common.delete') },
+          { auth: 'system:dict:remove', code: 'delete', text: $t('common.delete') },
         ],
       },
       field: 'operation',
@@ -270,8 +270,8 @@ export function useDictDataColumns(
           onClick: onActionClick,
         },
         options: [
-          { code: 'edit', text: $t('common.edit') },
-          { code: 'delete', text: $t('common.delete') },
+          { auth: 'system:dict:edit', code: 'edit', text: $t('common.edit') },
+          { auth: 'system:dict:remove', code: 'delete', text: $t('common.delete') },
         ],
       },
       field: 'operation',

@@ -13,6 +13,7 @@ import { defineStore } from 'pinia';
 
 import { getUserInfoApi, loginApi, logoutApi } from '#/api';
 import { $t } from '#/locales';
+import { useNotifyStore } from '#/store';
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
@@ -67,6 +68,9 @@ export const useAuthStore = defineStore('auth', () => {
           message: $t('authentication.loginSuccess'),
         });
       }
+
+      const notifyStore = useNotifyStore();
+      notifyStore.init();
     } finally {
       loginLoading.value = false;
     }
@@ -77,6 +81,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout(redirect: boolean = true) {
+    const notifyStore = useNotifyStore();
+    await notifyStore.destroy();
     try {
       await logoutApi();
     } catch {

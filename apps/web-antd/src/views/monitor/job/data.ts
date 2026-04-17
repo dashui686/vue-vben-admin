@@ -169,7 +169,7 @@ export function useColumns(
     },
     {
       cellRender: {
-        attrs: { beforeChange: onStatusChange },
+        attrs: { auth: 'monitor:job:edit', beforeChange: onStatusChange },
         name: onStatusChange ? 'CellSwitch' : 'CellTag',
       },
       field: 'status',
@@ -187,9 +187,9 @@ export function useColumns(
           maxInline: 2,
         },
         options: [
-          { code: 'edit', text: '修改' },
-          { code: 'delete', text: '删除' },
-          { code: 'run', text: '执行一次' },
+          { auth: 'monitor:job:edit', code: 'edit', text: '修改' },
+          { auth: 'monitor:job:remove', code: 'delete', text: '删除' },
+          { auth: 'monitor:job:edit', code: 'run', text: '执行一次' },
           { code: 'log', text: '调度日志' },
         ],
       },

@@ -121,7 +121,7 @@ export function useColumns(
         },
         options: [
           { code: 'detail', text: '详情' },
-          { code: 'delete', text: '删除' },
+          { auth: 'monitor:operlog:remove', code: 'delete', text: '删除' },
         ],
       },
       field: 'operation',

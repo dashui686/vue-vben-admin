@@ -4,6 +4,7 @@ import type { Recordable } from '@vben/types';
 
 import { h } from 'vue';
 
+import { useAccess } from '@vben/access';
 import { IconifyIcon } from '@vben/icons';
 import { $t, $te } from '@vben/locales';
 import { get, isFunction, isString } from '@vben/utils';
@@ -71,16 +72,11 @@ export function registerCellRenderers(vxeUI: VxeUI) {
   vxeUI.renderer.add('CellSwitch', {
     renderTableDefault({ attrs, props }, { column, row }) {
       const loadingKey = `__loading_${column.field}`;
-      const finallyProps = {
-        checkedChildren: $t('common.enabled'),
-        checkedValue: '0',
-        unCheckedChildren: $t('common.disabled'),
-        unCheckedValue: '1',
-        ...props,
-        checked: row[column.field],
-        loading: row[loadingKey] ?? false,
-        'onUpdate:checked': onChange,
+      const statusMap: Record<string, string> = {
+        '0': $t('common.enabled'),
+        '1': $t('common.disabled'),
       };
+
       async function onChange(newVal: any) {
         row[loadingKey] = true;
         try {
@@ -92,6 +88,24 @@ export function registerCellRenderers(vxeUI: VxeUI) {
           row[loadingKey] = false;
         }
       }
+
+      if (attrs?.auth) {
+        const { hasAccessByCodes } = useAccess();
+        if (!hasAccessByCodes([attrs.auth])) {
+          return h('span', null, statusMap[row[column.field]] ?? row[column.field]);
+        }
+      }
+
+      const finallyProps = {
+        checkedChildren: $t('common.enabled'),
+        checkedValue: '0',
+        unCheckedChildren: $t('common.disabled'),
+        unCheckedValue: '1',
+        ...props,
+        checked: row[column.field],
+        loading: row[loadingKey] ?? false,
+        'onUpdate:checked': onChange,
+      };
       return h(Switch, finallyProps);
     },
   });
@@ -214,7 +228,12 @@ export function registerCellRenderers(vxeUI: VxeUI) {
           });
           return optBtn;
         })
-        .filter((opt) => opt.show !== false);
+        .filter((opt) => opt.show !== false)
+        .filter((opt) => {
+          if (!opt.auth) return true;
+          const { hasAccessByCodes } = useAccess();
+          return hasAccessByCodes([opt.auth]);
+        });
 
       const maxInline = attrs?.maxInline ?? Infinity;
       const inlineOperations = allOperations.slice(0, maxInline);

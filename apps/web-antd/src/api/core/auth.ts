@@ -1,7 +1,7 @@
 import { useAppConfig } from '@vben/hooks';
 
 import { baseRequestClient, requestClient } from '#/api/request';
-const { clientId, sseEnable } = useAppConfig(
+const { clientId } = useAppConfig(
   import.meta.env,
   import.meta.env.PROD,
 );
@@ -37,15 +37,8 @@ export async function loginApi(data: AuthApi.LoginParams) {
 
 /**
  * 关闭sse连接
- * @returns void
  */
-export function seeConnectionClose() {
-  /**
-   * 未开启sse 不需要处理
-   */
-  if (!sseEnable) {
-    return;
-  }
+export function sseConnectionClose() {
   return requestClient.get('/resource/sse/close');
 }
 

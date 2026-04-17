@@ -176,7 +176,7 @@ export function useColumns(
     },
     {
       cellRender: {
-        attrs: { beforeChange: onStatusChange },
+        attrs: { auth: 'system:dept:edit', beforeChange: onStatusChange },
         name: onStatusChange ? 'CellSwitch' : 'CellTag',
       },
       field: 'status',
@@ -199,14 +199,17 @@ export function useColumns(
         },
         options: [
           {
+            auth: 'system:dept:edit',
             code: 'edit',
             text: $t('common.edit'),
           },
           {
+            auth: 'system:dept:add',
             code: 'append',
             text: '新增',
           },
           {
+            auth: 'system:dept:remove',
             code: 'delete',
             text: $t('common.delete'),
             disabled: (row: SystemDeptApi.SystemDept) => {

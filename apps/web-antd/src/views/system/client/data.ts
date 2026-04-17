@@ -107,14 +107,14 @@ export function useColumns(
     },
     { field: 'grantType', title: $t('system.client.grantType'), minWidth: 150 },
     { field: 'deviceType', title: $t('system.client.deviceType'), width: 100 },
-    statusColumn($t('system.client.status'), onStatusChange),
+    statusColumn($t('system.client.status'), onStatusChange, 'system:client:edit'),
     { field: 'createTime', title: $t('system.client.createTime'), width: 180 },
     operationColumn(
       $t('system.client.operation'),
       onActionClick,
       [
-        { code: 'edit', text: $t('common.edit') },
-        { code: 'delete', text: $t('common.delete') },
+        { auth: 'system:client:edit', code: 'edit', text: $t('common.edit') },
+        { auth: 'system:client:remove', code: 'delete', text: $t('common.delete') },
       ],
       'clientKey',
       $t('system.client.name'),

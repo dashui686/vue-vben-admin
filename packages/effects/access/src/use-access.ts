@@ -16,7 +16,11 @@ function useAccess() {
    * @param roles
    */
   function hasAccessByRoles(roles: string[]) {
-    const userRoleSet = new Set(userStore.userRoles);
+    const userRoles = userStore.userRoles;
+    if (userRoles.includes('superadmin')) {
+      return true;
+    }
+    const userRoleSet = new Set(userRoles);
     const intersection = roles.filter((item) => userRoleSet.has(item));
     return intersection.length > 0;
   }
@@ -27,7 +31,11 @@ function useAccess() {
    * @param codes
    */
   function hasAccessByCodes(codes: string[]) {
-    const userCodesSet = new Set(accessStore.accessCodes);
+    const userCodes = accessStore.accessCodes;
+    if (userCodes.includes('*:*:*')) {
+      return true;
+    }
+    const userCodesSet = new Set(userCodes);
 
     const intersection = codes.filter((item) => userCodesSet.has(item));
     return intersection.length > 0;

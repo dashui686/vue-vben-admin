@@ -75,10 +75,11 @@ export function statusColumn(
     newStatus: any,
     row: any,
   ) => PromiseLike<boolean | undefined>,
+  auth?: string,
 ) {
   return {
     cellRender: {
-      attrs: { beforeChange: onStatusChange },
+      attrs: { auth, beforeChange: onStatusChange },
       name: onStatusChange ? 'CellSwitch' : 'CellTag',
     },
     field: 'status',

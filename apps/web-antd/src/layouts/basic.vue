@@ -1,7 +1,5 @@
 <script lang="ts" setup>
-import type { NotificationItem } from '@vben/layouts';
-
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { AuthenticationLoginExpiredModal } from '@vben/common-ui';
@@ -20,15 +18,15 @@ import { openWindow } from '@vben/utils';
 
 import { getNoticeList } from '#/api/system/notice';
 import { $t } from '#/locales';
-import { useAuthStore } from '#/store';
+import { useAuthStore, useNotifyStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
 
-const notifications = ref<NotificationItem[]>([]);
+const notifyStore = useNotifyStore();
 
 async function loadNotifications() {
   try {
     const res = await getNoticeList({ pageNum: 1, pageSize: 20, status: '0' });
-    notifications.value = (res.rows || []).map((item) => ({
+    const items = (res.rows || []).map((item) => ({
       id: item.noticeId,
       avatar: '',
       date: item.createTime || '',
@@ -36,13 +34,15 @@ async function loadNotifications() {
       message: item.remark || '',
       title: item.noticeTitle || '',
     }));
+    notifyStore.setNotifications(items);
   } catch {
-    notifications.value = [];
+    notifyStore.setNotifications([]);
   }
 }
 
 onMounted(() => {
   loadNotifications();
+  notifyStore.init();
 });
 
 const router = useRouter();
@@ -50,9 +50,7 @@ const userStore = useUserStore();
 const authStore = useAuthStore();
 const accessStore = useAccessStore();
 const { destroyWatermark, updateWatermark } = useWatermark();
-const showDot = computed(() =>
-  notifications.value.some((item) => !item.isRead),
-);
+const showDot = computed(() => notifyStore.unreadCount > 0);
 
 const menus = computed(() => [
   {
@@ -100,22 +98,11 @@ async function handleLogout() {
 }
 
 function handleNoticeClear() {
-  notifications.value = [];
-}
-
-function markRead(id: number | string) {
-  const item = notifications.value.find((item) => item.id === id);
-  if (item) {
-    item.isRead = true;
-  }
-}
-
-function remove(id: number | string) {
-  notifications.value = notifications.value.filter((item) => item.id !== id);
+  notifyStore.clearAll();
 }
 
 function handleMakeAll() {
-  notifications.value.forEach((item) => (item.isRead = true));
+  notifyStore.markAllRead();
 }
 watch(
   () => ({
@@ -154,10 +141,10 @@ watch(
     <template #notification>
       <Notification
         :dot="showDot"
-        :notifications="notifications"
+        :notifications="notifyStore.notifications"
         @clear="handleNoticeClear"
-        @read="(item) => item.id && markRead(item.id)"
-        @remove="(item) => item.id && remove(item.id)"
+        @read="(item) => item.id && notifyStore.markRead(item.id)"
+        @remove="(item) => item.id && notifyStore.remove(item.id)"
         @make-all="handleMakeAll"
         @view-all="router.push('/system/notice')"
       />

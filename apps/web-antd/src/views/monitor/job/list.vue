@@ -152,11 +152,12 @@ async function onExport() {
     <FormModal @success="gridApi.query()" />
     <Grid table-title="定时任务">
       <template #toolbar-tools>
-        <Button type="primary" @click="onCreate">
+        <Button v-access:code="'monitor:job:add'" type="primary" @click="onCreate">
           <Plus class="size-5" />
           新增
         </Button>
         <Button
+          v-access:code="'monitor:job:edit'"
           :disabled="editDisabled"
           style="margin-left: 8px"
           @click="onToolbarEdit(onEdit)"
@@ -164,6 +165,7 @@ async function onExport() {
           {{ $t('common.edit') }}
         </Button>
         <Button
+          v-access:code="'monitor:job:remove'"
           :disabled="deleteDisabled"
           danger
           style="margin-left: 8px"
@@ -171,7 +173,7 @@ async function onExport() {
         >
           删除
         </Button>
-        <Button style="margin-left: 8px" @click="onExport">导出</Button>
+        <Button v-access:code="'monitor:job:export'" style="margin-left: 8px" @click="onExport">导出</Button>
         <Button
           style="margin-left: 8px"
           @click="router.push({ name: 'MonitorJobLog' })"

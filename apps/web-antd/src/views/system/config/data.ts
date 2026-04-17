@@ -109,8 +109,8 @@ export function useColumns(
       $t('system.config.operation'),
       onActionClick,
       [
-        { code: 'edit', text: $t('common.edit') },
-        { code: 'delete', text: $t('common.delete') },
+        { auth: 'system:config:edit', code: 'edit', text: $t('common.edit') },
+        { auth: 'system:config:remove', code: 'delete', text: $t('common.delete') },
       ],
       'configName',
       $t('system.config.name'),

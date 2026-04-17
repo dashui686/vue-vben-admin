@@ -246,8 +246,8 @@ function copyCode(code: string) {
     <Grid table-title="代码生成">
       <template #toolbar-tools>
         <div class="flex items-center gap-2">
-          <Button type="primary" @click="onBatchGen"> 生成 </Button>
-          <Button @click="onOpenImport"> 导入 </Button>
+          <Button v-access:code="'tool:gen:code'" type="primary" @click="onBatchGen"> 生成 </Button>
+          <Button v-access:code="'tool:gen:import'" @click="onOpenImport"> 导入 </Button>
         </div>
       </template>
     </Grid>

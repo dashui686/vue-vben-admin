@@ -240,7 +240,7 @@ export function useColumns(
       title: $t('system.user.phonenumber'),
       width: 130,
     },
-    statusColumn($t('system.user.status'), onStatusChange),
+    statusColumn($t('system.user.status'), onStatusChange, 'system:user:edit'),
     {
       field: 'createTime',
       title: $t('system.user.createTime'),
@@ -250,10 +250,10 @@ export function useColumns(
       $t('system.user.operation'),
       onActionClick,
       [
-        { code: 'edit', text: $t('common.edit') },
-        { code: 'resetPwd', text: $t('system.user.resetPwd') },
-        { code: 'authRole', text: $t('system.user.authRole') },
-        { code: 'delete', text: $t('common.delete') },
+        { auth: 'system:user:edit', code: 'edit', text: $t('common.edit') },
+        { auth: 'system:user:resetPwd', code: 'resetPwd', text: $t('system.user.resetPwd') },
+        { auth: 'system:user:edit', code: 'authRole', text: $t('system.user.authRole') },
+        { auth: 'system:user:remove', code: 'delete', text: $t('common.delete') },
       ],
       'userName',
       $t('system.user.name'),
