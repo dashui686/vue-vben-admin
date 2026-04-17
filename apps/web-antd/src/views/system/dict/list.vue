@@ -304,12 +304,15 @@ function onRefreshCache() {
             <Button
               v-access:code="'system:dict:export'"
               @click="onExportDictType"
-              >
-导出
-</Button>
-            <Button v-access:code="'system:dict:remove'" @click="onRefreshCache">
-刷新缓存
-</Button>
+            >
+              导出
+            </Button>
+            <Button
+              v-access:code="'system:dict:remove'"
+              @click="onRefreshCache"
+            >
+              刷新缓存
+            </Button>
           </div>
         </template>
       </DictTypeGrid>

@@ -147,9 +147,9 @@ function onRefreshCache() {
           v-access:code="'system:config:export'"
           style="margin-left: 8px"
           @click="onExport"
-          >
-导出
-</Button>
+        >
+          导出
+        </Button>
         <Button
           v-access:code="'system:config:remove'"
           style="margin-left: 8px"
