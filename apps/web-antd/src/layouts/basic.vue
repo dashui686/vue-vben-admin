@@ -159,7 +159,7 @@ watch(
         @read="(item) => item.id && markRead(item.id)"
         @remove="(item) => item.id && remove(item.id)"
         @make-all="handleMakeAll"
-        @view-all="router.push({ name: 'Profile' })"
+        @view-all="router.push('/system/notice')"
       />
     </template>
     <template #extra>
