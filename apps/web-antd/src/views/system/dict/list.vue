@@ -245,17 +245,19 @@ function onRefreshCache() {
         <template #toolbar-tools>
           <div class="flex items-center gap-2">
             <Button @click="onBackToTypes">返回字典类型</Button>
-            <Button type="primary" @click="onCreateDictData">
+            <Button v-access:code="'system:dict:add'" type="primary" @click="onCreateDictData">
               <Plus class="size-5" />
               {{ $t('ui.actionTitle.create', ['字典数据']) }}
             </Button>
             <Button
+              v-access:code="'system:dict:edit'"
               :disabled="dictDataEditDisabled"
               @click="onDictDataToolbarEdit(onEditDictData)"
             >
               {{ $t('common.edit') }}
             </Button>
             <Button
+              v-access:code="'system:dict:remove'"
               :disabled="dictDataDeleteDisabled"
               danger
               @click="onBatchDeleteDictData"
@@ -272,25 +274,27 @@ function onRefreshCache() {
       <DictTypeGrid :table-title="$t('system.dict.typeList')">
         <template #toolbar-tools>
           <div class="flex items-center gap-2">
-            <Button type="primary" @click="onCreateDictType">
+            <Button v-access:code="'system:dict:add'" type="primary" @click="onCreateDictType">
               <Plus class="size-5" />
               {{ $t('ui.actionTitle.create', [$t('system.dict.name')]) }}
             </Button>
             <Button
+              v-access:code="'system:dict:edit'"
               :disabled="dictTypeEditDisabled"
               @click="onDictTypeToolbarEdit(onEditDictType)"
             >
               {{ $t('common.edit') }}
             </Button>
             <Button
+              v-access:code="'system:dict:remove'"
               :disabled="dictTypeDeleteDisabled"
               danger
               @click="onBatchDeleteDictType"
             >
               {{ $t('common.delete') }}
             </Button>
-            <Button @click="onExportDictType">导出</Button>
-            <Button @click="onRefreshCache">刷新缓存</Button>
+            <Button v-access:code="'system:dict:export'" @click="onExportDictType">导出</Button>
+            <Button v-access:code="'system:dict:remove'" @click="onRefreshCache">刷新缓存</Button>
           </div>
         </template>
       </DictTypeGrid>

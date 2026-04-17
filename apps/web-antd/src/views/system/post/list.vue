@@ -173,11 +173,12 @@ onMounted(() => {
       <div class="flex-1">
         <Grid :table-title="$t('system.post.list')">
           <template #toolbar-tools>
-            <Button type="primary" @click="onCreate">
+            <Button v-access:code="'system:post:add'" type="primary" @click="onCreate">
               <Plus class="size-5" />
               {{ $t('ui.actionTitle.create', [$t('system.post.name')]) }}
             </Button>
             <Button
+              v-access:code="'system:post:edit'"
               :disabled="editDisabled"
               style="margin-left: 8px"
               @click="onToolbarEdit(onEdit)"
@@ -185,6 +186,7 @@ onMounted(() => {
               {{ $t('common.edit') }}
             </Button>
             <Button
+              v-access:code="'system:post:remove'"
               :disabled="deleteDisabled"
               danger
               style="margin-left: 8px"
@@ -192,7 +194,7 @@ onMounted(() => {
             >
               删除
             </Button>
-            <Button style="margin-left: 8px" @click="onExport">导出</Button>
+            <Button v-access:code="'system:post:export'" style="margin-left: 8px" @click="onExport">导出</Button>
           </template>
         </Grid>
       </div>

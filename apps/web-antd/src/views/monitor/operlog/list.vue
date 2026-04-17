@@ -154,11 +154,11 @@ async function onExport() {
   <Page auto-content-height>
     <Grid table-title="操作日志">
       <template #toolbar-tools>
-        <Button :disabled="deleteDisabled" danger @click="onBatchDelete">
+        <Button v-access:code="'monitor:operlog:remove'" :disabled="deleteDisabled" danger @click="onBatchDelete">
           删除
         </Button>
-        <Button danger style="margin-left: 8px" @click="onClean"> 清空 </Button>
-        <Button style="margin-left: 8px" @click="onExport">导出</Button>
+        <Button v-access:code="'monitor:operlog:remove'" danger style="margin-left: 8px" @click="onClean"> 清空 </Button>
+        <Button v-access:code="'monitor:operlog:export'" style="margin-left: 8px" @click="onExport">导出</Button>
       </template>
     </Grid>
   </Page>

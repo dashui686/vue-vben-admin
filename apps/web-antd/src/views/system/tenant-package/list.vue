@@ -110,11 +110,12 @@ async function onDelete(row: SystemTenantPackageApi.SystemTenantPackage) {
     <FormModal @success="gridApi.query()" />
     <Grid :table-title="$t('system.tenantPackage.list')">
       <template #toolbar-tools>
-        <Button type="primary" @click="onCreate">
+        <Button v-access:code="'system:tenantPackage:add'" type="primary" @click="onCreate">
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.tenantPackage.name')]) }}
         </Button>
         <Button
+          v-access:code="'system:tenantPackage:edit'"
           :disabled="editDisabled"
           style="margin-left: 8px"
           @click="onToolbarEdit(onEdit)"
@@ -122,6 +123,7 @@ async function onDelete(row: SystemTenantPackageApi.SystemTenantPackage) {
           {{ $t('common.edit') }}
         </Button>
         <Button
+          v-access:code="'system:tenantPackage:remove'"
           :disabled="deleteDisabled"
           danger
           style="margin-left: 8px"

@@ -104,13 +104,14 @@ function onUpload(info: { file: File }) {
   <Page auto-content-height>
     <Grid :table-title="$t('system.oss.list')">
       <template #toolbar-tools>
-        <Upload :custom-request="onUpload" :show-upload-list="false">
+        <Upload v-access:code="'system:oss:upload'" :custom-request="onUpload" :show-upload-list="false">
           <Button type="primary">
             <Plus class="size-5" />
             {{ $t('system.oss.upload') }}
           </Button>
         </Upload>
         <Button
+          v-access:code="'system:oss:remove'"
           :disabled="deleteDisabled"
           danger
           style="margin-left: 8px"

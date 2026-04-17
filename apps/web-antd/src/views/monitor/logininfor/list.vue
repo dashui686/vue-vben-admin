@@ -114,16 +114,16 @@ async function onExport() {
   <Page auto-content-height>
     <Grid table-title="登录日志">
       <template #toolbar-tools>
-        <Button :disabled="deleteDisabled" danger @click="onBatchDelete">
+        <Button v-access:code="'monitor:logininfor:remove'" :disabled="deleteDisabled" danger @click="onBatchDelete">
           删除
         </Button>
-        <Button danger style="margin-left: 8px" @click="onClean">
+        <Button v-access:code="'monitor:logininfor:remove'" danger style="margin-left: 8px" @click="onClean">
           清空日志
         </Button>
-        <Button type="primary" style="margin-left: 8px" @click="onUnlock">
+        <Button v-access:code="'monitor:logininfor:unlock'" type="primary" style="margin-left: 8px" @click="onUnlock">
           解锁
         </Button>
-        <Button style="margin-left: 8px" @click="onExport">导出</Button>
+        <Button v-access:code="'monitor:logininfor:export'" style="margin-left: 8px" @click="onExport">导出</Button>
       </template>
     </Grid>
   </Page>

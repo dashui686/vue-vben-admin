@@ -191,11 +191,12 @@ async function onExport() {
     />
     <Grid :table-title="$t('system.role.list')">
       <template #toolbar-tools>
-        <Button type="primary" @click="onCreate">
+        <Button v-access:code="'system:role:add'" type="primary" @click="onCreate">
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.role.name')]) }}
         </Button>
         <Button
+          v-access:code="'system:role:edit'"
           :disabled="editDisabled"
           style="margin-left: 8px"
           @click="onToolbarEdit((row) => formDrawerApi.setData(row).open())"
@@ -203,6 +204,7 @@ async function onExport() {
           {{ $t('common.edit') }}
         </Button>
         <Button
+          v-access:code="'system:role:remove'"
           :disabled="deleteDisabled"
           danger
           style="margin-left: 8px"
@@ -210,7 +212,7 @@ async function onExport() {
         >
           删除
         </Button>
-        <Button style="margin-left: 8px" @click="onExport">导出</Button>
+        <Button v-access:code="'system:role:export'" style="margin-left: 8px" @click="onExport">导出</Button>
       </template>
     </Grid>
   </Page>

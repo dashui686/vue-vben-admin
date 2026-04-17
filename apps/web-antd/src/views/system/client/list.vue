@@ -105,11 +105,12 @@ async function onDelete(row: SystemClientApi.SystemClient) {
     <FormModal @success="gridApi.query()" />
     <Grid :table-title="$t('system.client.list')">
       <template #toolbar-tools>
-        <Button type="primary" @click="onCreate">
+        <Button v-access:code="'system:client:add'" type="primary" @click="onCreate">
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.client.name')]) }}
         </Button>
         <Button
+          v-access:code="'system:client:edit'"
           :disabled="editDisabled"
           style="margin-left: 8px"
           @click="onToolbarEdit(onEdit)"
@@ -117,6 +118,7 @@ async function onDelete(row: SystemClientApi.SystemClient) {
           {{ $t('common.edit') }}
         </Button>
         <Button
+          v-access:code="'system:client:remove'"
           :disabled="deleteDisabled"
           danger
           style="margin-left: 8px"

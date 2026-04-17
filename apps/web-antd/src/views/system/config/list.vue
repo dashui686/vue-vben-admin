@@ -118,11 +118,12 @@ function onRefreshCache() {
     <FormModal @success="gridApi.query()" />
     <Grid :table-title="$t('system.config.list')">
       <template #toolbar-tools>
-        <Button type="primary" @click="onCreate">
+        <Button v-access:code="'system:config:add'" type="primary" @click="onCreate">
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.config.name')]) }}
         </Button>
         <Button
+          v-access:code="'system:config:edit'"
           :disabled="editDisabled"
           style="margin-left: 8px"
           @click="onToolbarEdit(onEdit)"
@@ -130,6 +131,7 @@ function onRefreshCache() {
           {{ $t('common.edit') }}
         </Button>
         <Button
+          v-access:code="'system:config:remove'"
           :disabled="deleteDisabled"
           danger
           style="margin-left: 8px"
@@ -137,8 +139,8 @@ function onRefreshCache() {
         >
           删除
         </Button>
-        <Button style="margin-left: 8px" @click="onExport">导出</Button>
-        <Button style="margin-left: 8px" @click="onRefreshCache">
+        <Button v-access:code="'system:config:export'" style="margin-left: 8px" @click="onExport">导出</Button>
+        <Button v-access:code="'system:config:remove'" style="margin-left: 8px" @click="onRefreshCache">
           刷新缓存
         </Button>
       </template>

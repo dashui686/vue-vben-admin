@@ -96,11 +96,12 @@ async function onDelete(row: SystemNoticeApi.SystemNotice) {
     <FormModal @success="gridApi.query()" />
     <Grid :table-title="$t('system.notice.list')">
       <template #toolbar-tools>
-        <Button type="primary" @click="onCreate">
+        <Button v-access:code="'system:notice:add'" type="primary" @click="onCreate">
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.notice.name')]) }}
         </Button>
         <Button
+          v-access:code="'system:notice:edit'"
           :disabled="editDisabled"
           style="margin-left: 8px"
           @click="onToolbarEdit(onEdit)"
@@ -108,6 +109,7 @@ async function onDelete(row: SystemNoticeApi.SystemNotice) {
           {{ $t('common.edit') }}
         </Button>
         <Button
+          v-access:code="'system:notice:remove'"
           :disabled="deleteDisabled"
           danger
           style="margin-left: 8px"

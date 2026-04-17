@@ -117,11 +117,12 @@ async function onDelete(row: SystemOssApi.SystemOssConfig) {
           <ArrowLeft class="size-4" />
           返回
         </Button>
-        <Button type="primary" style="margin-left: 8px" @click="onCreate">
+        <Button v-access:code="'system:oss:add'" type="primary" style="margin-left: 8px" @click="onCreate">
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.oss.configName')]) }}
         </Button>
         <Button
+          v-access:code="'system:oss:edit'"
           :disabled="editDisabled"
           style="margin-left: 8px"
           @click="onToolbarEdit(onEdit)"
@@ -129,6 +130,7 @@ async function onDelete(row: SystemOssApi.SystemOssConfig) {
           {{ $t('common.edit') }}
         </Button>
         <Button
+          v-access:code="'system:oss:remove'"
           :disabled="deleteDisabled"
           danger
           style="margin-left: 8px"
