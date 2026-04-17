@@ -21,10 +21,7 @@ import {
   getDictTypeList,
   refreshDictCache,
 } from '#/api/system/dict';
-import {
-  useBatchDelete,
-  useGridSelection,
-} from '#/composables/useGridHelper';
+import { useBatchDelete, useGridSelection } from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
 import {
@@ -51,8 +48,12 @@ const [DictDataFormModal, dictDataFormModalApi] = useVbenModal({
 const currentDictType = ref<string>();
 
 // DictType grid helpers
-const { deleteDisabled: dictTypeDeleteDisabled, editDisabled: dictTypeEditDisabled, gridEvents: dictTypeGridEvents, onToolbarEdit: onDictTypeToolbarEdit } =
-  useGridSelection<SystemDictTypeApi.SystemDictType>(() => dictTypeGridApi);
+const {
+  deleteDisabled: dictTypeDeleteDisabled,
+  editDisabled: dictTypeEditDisabled,
+  gridEvents: dictTypeGridEvents,
+  onToolbarEdit: onDictTypeToolbarEdit,
+} = useGridSelection<SystemDictTypeApi.SystemDictType>(() => dictTypeGridApi);
 
 const { onBatchDelete: onBatchDeleteDictType } = useBatchDelete(
   () => dictTypeGridApi,
@@ -61,8 +62,12 @@ const { onBatchDelete: onBatchDeleteDictType } = useBatchDelete(
 );
 
 // DictData grid helpers
-const { deleteDisabled: dictDataDeleteDisabled, editDisabled: dictDataEditDisabled, gridEvents: dictDataGridEvents, onToolbarEdit: onDictDataToolbarEdit } =
-  useGridSelection<SystemDictDataApi.SystemDictData>(() => dictDataGridApi);
+const {
+  deleteDisabled: dictDataDeleteDisabled,
+  editDisabled: dictDataEditDisabled,
+  gridEvents: dictDataGridEvents,
+  onToolbarEdit: onDictDataToolbarEdit,
+} = useGridSelection<SystemDictDataApi.SystemDictData>(() => dictDataGridApi);
 
 const { onBatchDelete: onBatchDeleteDictData } = useBatchDelete(
   () => dictDataGridApi,
@@ -244,10 +249,17 @@ function onRefreshCache() {
               <Plus class="size-5" />
               {{ $t('ui.actionTitle.create', ['字典数据']) }}
             </Button>
-            <Button :disabled="dictDataEditDisabled" @click="onDictDataToolbarEdit(onEditDictData)">
+            <Button
+              :disabled="dictDataEditDisabled"
+              @click="onDictDataToolbarEdit(onEditDictData)"
+            >
               {{ $t('common.edit') }}
             </Button>
-            <Button :disabled="dictDataDeleteDisabled" danger @click="onBatchDeleteDictData">
+            <Button
+              :disabled="dictDataDeleteDisabled"
+              danger
+              @click="onBatchDeleteDictData"
+            >
               {{ $t('common.delete') }}
             </Button>
           </div>
@@ -264,10 +276,17 @@ function onRefreshCache() {
               <Plus class="size-5" />
               {{ $t('ui.actionTitle.create', [$t('system.dict.name')]) }}
             </Button>
-            <Button :disabled="dictTypeEditDisabled" @click="onDictTypeToolbarEdit(onEditDictType)">
+            <Button
+              :disabled="dictTypeEditDisabled"
+              @click="onDictTypeToolbarEdit(onEditDictType)"
+            >
               {{ $t('common.edit') }}
             </Button>
-            <Button :disabled="dictTypeDeleteDisabled" danger @click="onBatchDeleteDictType">
+            <Button
+              :disabled="dictTypeDeleteDisabled"
+              danger
+              @click="onBatchDeleteDictType"
+            >
               {{ $t('common.delete') }}
             </Button>
             <Button @click="onExportDictType">导出</Button>

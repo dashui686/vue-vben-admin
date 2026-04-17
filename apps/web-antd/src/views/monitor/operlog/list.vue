@@ -155,8 +155,8 @@ async function onExport() {
     <Grid table-title="操作日志">
       <template #toolbar-tools>
         <Button :disabled="deleteDisabled" danger @click="onBatchDelete">
-删除
-</Button>
+          删除
+        </Button>
         <Button danger style="margin-left: 8px" @click="onClean"> 清空 </Button>
         <Button style="margin-left: 8px" @click="onExport">导出</Button>
       </template>

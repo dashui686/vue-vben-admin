@@ -39,11 +39,7 @@ const { onStatusChange } = useStatusConfirm<SystemClientApi.SystemClient>(
   { idField: 'id', nameField: 'clientKey' },
 );
 
-const { onBatchDelete } = useBatchDelete(
-  () => gridApi,
-  deleteClient,
-  'id',
-);
+const { onBatchDelete } = useBatchDelete(() => gridApi, deleteClient, 'id');
 
 const [Grid, gridApi] = useVbenVxeGrid({
   gridEvents,

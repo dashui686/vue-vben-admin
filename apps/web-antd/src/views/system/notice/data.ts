@@ -9,8 +9,8 @@ import { operationColumn } from '#/composables/useDataHelper';
 import { $t } from '#/locales';
 
 const noticeTypeOptions = [
-  { label: '通知', value: '1' },
-  { label: '公告', value: '2' },
+  { label: '通知', value: '1', color: 'processing' },
+  { label: '公告', value: '2', color: 'warning' },
 ];
 
 export function useGridFormSchema(): VbenFormSchema[] {
@@ -107,6 +107,7 @@ export function useColumns(
       align: 'center',
       cellRender: {
         name: 'CellTag',
+        options: noticeTypeOptions,
       },
     },
     {
