@@ -105,7 +105,11 @@ async function onDelete(row: SystemClientApi.SystemClient) {
     <FormModal @success="gridApi.query()" />
     <Grid :table-title="$t('system.client.list')">
       <template #toolbar-tools>
-        <Button v-access:code="'system:client:add'" type="primary" @click="onCreate">
+        <Button
+          v-access:code="'system:client:add'"
+          type="primary"
+          @click="onCreate"
+        >
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.client.name')]) }}
         </Button>

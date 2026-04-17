@@ -235,14 +235,27 @@ onMounted(() => {
         <Grid :table-title="$t('system.user.list')">
           <template #toolbar-tools>
             <div class="flex items-center gap-2">
-              <Button v-access:code="'system:user:add'" type="primary" @click="onCreate">
+              <Button
+                v-access:code="'system:user:add'"
+                type="primary"
+                @click="onCreate"
+              >
                 <Plus class="size-5" />
                 {{ $t('ui.actionTitle.create', [$t('system.user.name')]) }}
               </Button>
-              <Button v-access:code="'system:user:edit'" :disabled="editDisabled" @click="onToolbarEdit(onEdit)">
+              <Button
+                v-access:code="'system:user:edit'"
+                :disabled="editDisabled"
+                @click="onToolbarEdit(onEdit)"
+              >
                 {{ $t('common.edit') }}
               </Button>
-              <Button v-access:code="'system:user:remove'" :disabled="deleteDisabled" danger @click="onBatchDelete">
+              <Button
+                v-access:code="'system:user:remove'"
+                :disabled="deleteDisabled"
+                danger
+                @click="onBatchDelete"
+              >
                 {{ $t('common.delete') }}
               </Button>
               <Button v-access:code="'system:user:import'" @click="onImport">

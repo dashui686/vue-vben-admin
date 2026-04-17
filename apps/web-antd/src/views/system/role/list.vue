@@ -191,7 +191,11 @@ async function onExport() {
     />
     <Grid :table-title="$t('system.role.list')">
       <template #toolbar-tools>
-        <Button v-access:code="'system:role:add'" type="primary" @click="onCreate">
+        <Button
+          v-access:code="'system:role:add'"
+          type="primary"
+          @click="onCreate"
+        >
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.role.name')]) }}
         </Button>
@@ -212,7 +216,13 @@ async function onExport() {
         >
           删除
         </Button>
-        <Button v-access:code="'system:role:export'" style="margin-left: 8px" @click="onExport">导出</Button>
+        <Button
+          v-access:code="'system:role:export'"
+          style="margin-left: 8px"
+          @click="onExport"
+          >
+导出
+</Button>
       </template>
     </Grid>
   </Page>

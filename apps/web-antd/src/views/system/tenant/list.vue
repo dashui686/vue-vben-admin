@@ -105,7 +105,11 @@ async function onDelete(row: SystemTenantApi.SystemTenant) {
     <FormModal @success="gridApi.query()" />
     <Grid :table-title="$t('system.tenant.list')">
       <template #toolbar-tools>
-        <Button v-access:code="'system:tenant:add'" type="primary" @click="onCreate">
+        <Button
+          v-access:code="'system:tenant:add'"
+          type="primary"
+          @click="onCreate"
+        >
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.tenant.name')]) }}
         </Button>

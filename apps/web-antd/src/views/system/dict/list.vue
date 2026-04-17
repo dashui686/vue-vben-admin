@@ -245,7 +245,11 @@ function onRefreshCache() {
         <template #toolbar-tools>
           <div class="flex items-center gap-2">
             <Button @click="onBackToTypes">返回字典类型</Button>
-            <Button v-access:code="'system:dict:add'" type="primary" @click="onCreateDictData">
+            <Button
+              v-access:code="'system:dict:add'"
+              type="primary"
+              @click="onCreateDictData"
+            >
               <Plus class="size-5" />
               {{ $t('ui.actionTitle.create', ['字典数据']) }}
             </Button>
@@ -274,7 +278,11 @@ function onRefreshCache() {
       <DictTypeGrid :table-title="$t('system.dict.typeList')">
         <template #toolbar-tools>
           <div class="flex items-center gap-2">
-            <Button v-access:code="'system:dict:add'" type="primary" @click="onCreateDictType">
+            <Button
+              v-access:code="'system:dict:add'"
+              type="primary"
+              @click="onCreateDictType"
+            >
               <Plus class="size-5" />
               {{ $t('ui.actionTitle.create', [$t('system.dict.name')]) }}
             </Button>
@@ -293,8 +301,15 @@ function onRefreshCache() {
             >
               {{ $t('common.delete') }}
             </Button>
-            <Button v-access:code="'system:dict:export'" @click="onExportDictType">导出</Button>
-            <Button v-access:code="'system:dict:remove'" @click="onRefreshCache">刷新缓存</Button>
+            <Button
+              v-access:code="'system:dict:export'"
+              @click="onExportDictType"
+              >
+导出
+</Button>
+            <Button v-access:code="'system:dict:remove'" @click="onRefreshCache">
+刷新缓存
+</Button>
           </div>
         </template>
       </DictTypeGrid>

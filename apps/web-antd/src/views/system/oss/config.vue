@@ -117,7 +117,12 @@ async function onDelete(row: SystemOssApi.SystemOssConfig) {
           <ArrowLeft class="size-4" />
           返回
         </Button>
-        <Button v-access:code="'system:oss:add'" type="primary" style="margin-left: 8px" @click="onCreate">
+        <Button
+          v-access:code="'system:oss:add'"
+          type="primary"
+          style="margin-left: 8px"
+          @click="onCreate"
+        >
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.oss.configName')]) }}
         </Button>

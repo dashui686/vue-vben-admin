@@ -96,7 +96,11 @@ async function onDelete(row: SystemNoticeApi.SystemNotice) {
     <FormModal @success="gridApi.query()" />
     <Grid :table-title="$t('system.notice.list')">
       <template #toolbar-tools>
-        <Button v-access:code="'system:notice:add'" type="primary" @click="onCreate">
+        <Button
+          v-access:code="'system:notice:add'"
+          type="primary"
+          @click="onCreate"
+        >
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.notice.name')]) }}
         </Button>
