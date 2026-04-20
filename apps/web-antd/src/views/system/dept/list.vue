@@ -224,8 +224,8 @@ async function saveOrder() {
             {{ $t('ui.actionTitle.create', [$t('system.dept.name')]) }}
           </Button>
           <Button v-access:code="'system:dept:edit'" @click="saveOrder">
-保存排序
-</Button>
+            保存排序
+          </Button>
           <Button @click="expandAll">展开</Button>
           <Button @click="collapseAll">折叠</Button>
         </div>

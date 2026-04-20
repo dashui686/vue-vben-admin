@@ -241,8 +241,7 @@ export function downloadByUrl({
     link.target = target;
 
     if (link.download !== undefined) {
-      link.download =
-        fileName || url.slice(url.lastIndexOf('/') + 1);
+      link.download = fileName || url.slice(url.lastIndexOf('/') + 1);
     }
 
     if (document.createEvent) {

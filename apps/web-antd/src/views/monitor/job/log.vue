@@ -250,9 +250,9 @@ function onClean() {
           v-access:code="'monitor:job:remove'"
           danger
           @click="onBatchDelete"
-          >
-删除
-</Button>
+        >
+          删除
+        </Button>
         <Button
           v-access:code="'monitor:job:remove'"
           danger
