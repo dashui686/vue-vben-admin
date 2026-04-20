@@ -1,25 +1,33 @@
 <script setup lang="ts">
 import type { PropType } from 'vue';
 
-import type { CategoryTree } from '#/api/workflow/category/model';
-
 import { onMounted, ref } from 'vue';
 
 import { SyncOutlined } from '@ant-design/icons-vue';
-import { InputSearch, Skeleton, Tree } from 'ant-design-vue';
+import { Empty, InputSearch, Skeleton, Tree } from 'ant-design-vue';
 
-import { categoryTree } from '#/api/workflow/category';
+import { getUserDeptTree } from '#/api/system/user';
 
 defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(defineProps<Props>(), {
+  showSearch: true,
+  api: getUserDeptTree,
+});
 
 const emit = defineEmits<{
   reload: [];
   select: [];
 }>();
 
-const selectCode = defineModel('selectCode', {
+interface Props {
+  api?: () => Promise<any[]>;
+  showSearch?: boolean;
+}
+
+const selectDeptId = defineModel('selectDeptId', {
   required: true,
-  type: Array as PropType<number[] | string[]>,
+  type: Array as PropType<string[]>,
 });
 
 const searchValue = defineModel('searchValue', {
@@ -27,17 +35,17 @@ const searchValue = defineModel('searchValue', {
   default: '',
 });
 
-const categoryTreeArray = ref<CategoryTree[]>([]);
-const showTreeSkeleton = ref<boolean>(true);
+const deptTreeArray = ref<any[]>([]);
+const showTreeSkeleton = ref(true);
 
 async function loadTree() {
   showTreeSkeleton.value = true;
   searchValue.value = '';
-  selectCode.value = [];
+  selectDeptId.value = [];
 
-  const treeData = await categoryTree();
+  const ret = await props.api();
 
-  categoryTreeArray.value = treeData;
+  deptTreeArray.value = ret;
   showTreeSkeleton.value = false;
 }
 
@@ -60,10 +68,13 @@ onMounted(loadTree);
       <div
         class="bg-background flex h-full flex-col overflow-y-auto rounded-lg"
       >
-        <div class="bg-background z-100 sticky left-0 top-0 p-[8px]">
+        <div
+          v-if="showSearch"
+          class="bg-background z-100 sticky left-0 top-0 p-[8px]"
+        >
           <InputSearch
             v-model:value="searchValue"
-            placeholder="搜索"
+            placeholder="搜索部门"
             size="small"
             allow-clear
           >
@@ -77,22 +88,21 @@ onMounted(loadTree);
         <div class="h-full overflow-x-hidden px-[8px]">
           <Tree
             v-bind="$attrs"
-            v-if="categoryTreeArray.length > 0"
-            v-model:selected-keys="selectCode"
-            :class="$attrs.class"
+            v-if="deptTreeArray.length > 0"
+            v-model:selected-keys="selectDeptId"
             :field-names="{ title: 'label', key: 'id' }"
             :show-line="{ showLeafIcon: false }"
-            :tree-data="categoryTreeArray"
+            :tree-data="deptTreeArray"
             :virtual="false"
             default-expand-all
             @select="$emit('select')"
           >
             <template #title="{ label }">
               <span v-if="label.includes(searchValue)">
-                {{ label.substring(0, label.indexOf(searchValue)) }}
+                {{ label.slice(0, label.indexOf(searchValue)) }}
                 <span class="text-primary">{{ searchValue }}</span>
                 {{
-                  label.substring(
+                  label.slice(
                     label.indexOf(searchValue) + searchValue.length,
                   )
                 }}
@@ -100,6 +110,12 @@ onMounted(loadTree);
               <span v-else>{{ label }}</span>
             </template>
           </Tree>
+          <div v-else class="mt-5">
+            <Empty
+              :image="Empty.PRESENTED_IMAGE_SIMPLE"
+              description="无部门数据"
+            />
+          </div>
         </div>
       </div>
     </Skeleton>
