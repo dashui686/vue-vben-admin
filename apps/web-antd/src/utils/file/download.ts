@@ -242,7 +242,7 @@ export function downloadByUrl({
 
     if (link.download !== undefined) {
       link.download =
-        fileName || url.slice(url.lastIndexOf('/') + 1, url.length);
+        fileName || url.slice(url.lastIndexOf('/') + 1);
     }
 
     if (document.createEvent) {

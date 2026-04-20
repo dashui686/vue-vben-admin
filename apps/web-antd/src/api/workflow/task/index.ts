@@ -98,10 +98,7 @@ export function getTaskByTaskId(taskId: string) {
  * 终止任务
  */
 export function terminationTask(data: { comment?: string; taskId: string }) {
-  return requestClient.postWithMsg(
-    '/workflow/task/terminationTask',
-    data,
-  );
+  return requestClient.postWithMsg('/workflow/task/terminationTask', data);
 }
 
 /**

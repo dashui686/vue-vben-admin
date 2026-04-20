@@ -452,7 +452,11 @@ export function useColumns(
         attrs: { nameField: 'name', onClick: onActionClick },
         name: 'CellOperation',
         options: [
-          { auth: 'system:menu:add', code: 'append', text: $t('system.menu.appendChild') },
+          {
+            auth: 'system:menu:add',
+            code: 'append',
+            text: $t('system.menu.appendChild'),
+          },
           { auth: 'system:menu:edit', code: 'edit' },
           { auth: 'system:menu:remove', code: 'delete' },
         ],

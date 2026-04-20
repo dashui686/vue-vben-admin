@@ -173,11 +173,20 @@ function onToggleExpandAll() {
     <FormDrawer @success="onRefresh" />
     <Grid>
       <template #toolbar-tools>
-        <Button v-access:code="'system:menu:add'" type="primary" @click="onCreate">
+        <Button
+          v-access:code="'system:menu:add'"
+          type="primary"
+          @click="onCreate"
+        >
           <Plus class="size-5" />
           {{ $t('ui.actionTitle.create', [$t('system.menu.name')]) }}
         </Button>
-        <Button v-access:code="'system:menu:remove'" danger style="margin-left: 8px" @click="onCascadeDelete">
+        <Button
+          v-access:code="'system:menu:remove'"
+          danger
+          style="margin-left: 8px"
+          @click="onCascadeDelete"
+        >
           级联删除
         </Button>
         <Button style="margin-left: 8px" @click="onToggleExpandAll">

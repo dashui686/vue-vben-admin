@@ -111,8 +111,16 @@ export function useColumns(
       $t('system.oss.operation'),
       onActionClick,
       [
-        { auth: 'system:oss:download', code: 'download', text: $t('system.oss.download') },
-        { auth: 'system:oss:remove', code: 'delete', text: $t('common.delete') },
+        {
+          auth: 'system:oss:download',
+          code: 'download',
+          text: $t('system.oss.download'),
+        },
+        {
+          auth: 'system:oss:remove',
+          code: 'delete',
+          text: $t('common.delete'),
+        },
       ],
       'fileName',
       $t('system.oss.name'),
@@ -203,7 +211,11 @@ export function useConfigColumns(
       onActionClick,
       [
         { auth: 'system:oss:edit', code: 'edit', text: $t('common.edit') },
-        { auth: 'system:oss:remove', code: 'delete', text: $t('common.delete') },
+        {
+          auth: 'system:oss:remove',
+          code: 'delete',
+          text: $t('common.delete'),
+        },
       ],
       'configKey',
       $t('system.oss.configName'),

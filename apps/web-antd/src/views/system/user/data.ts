@@ -251,9 +251,21 @@ export function useColumns(
       onActionClick,
       [
         { auth: 'system:user:edit', code: 'edit', text: $t('common.edit') },
-        { auth: 'system:user:resetPwd', code: 'resetPwd', text: $t('system.user.resetPwd') },
-        { auth: 'system:user:edit', code: 'authRole', text: $t('system.user.authRole') },
-        { auth: 'system:user:remove', code: 'delete', text: $t('common.delete') },
+        {
+          auth: 'system:user:resetPwd',
+          code: 'resetPwd',
+          text: $t('system.user.resetPwd'),
+        },
+        {
+          auth: 'system:user:edit',
+          code: 'authRole',
+          text: $t('system.user.authRole'),
+        },
+        {
+          auth: 'system:user:remove',
+          code: 'delete',
+          text: $t('common.delete'),
+        },
       ],
       'userName',
       $t('system.user.name'),

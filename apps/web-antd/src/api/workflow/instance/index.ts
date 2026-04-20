@@ -132,8 +132,5 @@ export function updateFlowVariable(data: {
   key: string;
   value: any;
 }) {
-  return requestClient.putWithMsg(
-    '/workflow/instance/updateVariable',
-    data,
-  );
+  return requestClient.putWithMsg('/workflow/instance/updateVariable', data);
 }

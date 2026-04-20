@@ -123,7 +123,11 @@ export function useColumns(
       onActionClick,
       [
         { auth: 'system:notice:edit', code: 'edit', text: $t('common.edit') },
-        { auth: 'system:notice:remove', code: 'delete', text: $t('common.delete') },
+        {
+          auth: 'system:notice:remove',
+          code: 'delete',
+          text: $t('common.delete'),
+        },
       ],
       'noticeTitle',
       $t('system.notice.name'),

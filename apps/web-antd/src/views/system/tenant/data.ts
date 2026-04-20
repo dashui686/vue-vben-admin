@@ -212,7 +212,11 @@ export function useColumns(
       width: 100,
       align: 'center',
     },
-    statusColumn($t('system.tenant.status'), onStatusChange, 'system:tenant:edit'),
+    statusColumn(
+      $t('system.tenant.status'),
+      onStatusChange,
+      'system:tenant:edit',
+    ),
     {
       field: 'createTime',
       title: $t('system.tenant.createTime'),
@@ -223,7 +227,11 @@ export function useColumns(
       onActionClick,
       [
         { auth: 'system:tenant:edit', code: 'edit', text: $t('common.edit') },
-        { auth: 'system:tenant:remove', code: 'delete', text: $t('common.delete') },
+        {
+          auth: 'system:tenant:remove',
+          code: 'delete',
+          text: $t('common.delete'),
+        },
       ],
       'companyName',
       $t('system.tenant.name'),

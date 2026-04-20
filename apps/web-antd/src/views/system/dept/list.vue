@@ -215,11 +215,17 @@ async function saveOrder() {
     <Grid :table-title="$t('system.dept.list')">
       <template #toolbar-tools>
         <div class="flex items-center gap-2">
-          <Button v-access:code="'system:dept:add'" type="primary" @click="onCreate">
+          <Button
+            v-access:code="'system:dept:add'"
+            type="primary"
+            @click="onCreate"
+          >
             <Plus class="size-5" />
             {{ $t('ui.actionTitle.create', [$t('system.dept.name')]) }}
           </Button>
-          <Button v-access:code="'system:dept:edit'" @click="saveOrder">保存排序</Button>
+          <Button v-access:code="'system:dept:edit'" @click="saveOrder">
+保存排序
+</Button>
           <Button @click="expandAll">展开</Button>
           <Button @click="collapseAll">折叠</Button>
         </div>

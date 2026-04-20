@@ -28,7 +28,7 @@ export const querySchema: FormSchemaGetter = () => [
 
 function renderStatusTag(
   value: number | string,
-  options: { color?: string; label: string; value: number | string; }[],
+  options: { color?: string; label: string; value: number | string }[],
 ) {
   const item = options.find((o) => o.value === value);
   if (!item) return value;

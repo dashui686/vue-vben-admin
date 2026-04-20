@@ -97,7 +97,11 @@ export function useColumns(
       title: $t('system.tenantPackage.packageName'),
       minWidth: 150,
     },
-    statusColumn($t('system.tenantPackage.status'), onStatusChange, 'system:tenantPackage:edit'),
+    statusColumn(
+      $t('system.tenantPackage.status'),
+      onStatusChange,
+      'system:tenantPackage:edit',
+    ),
     {
       field: 'remark',
       title: $t('system.tenantPackage.remark'),
@@ -112,8 +116,16 @@ export function useColumns(
       $t('system.tenantPackage.operation'),
       onActionClick,
       [
-        { auth: 'system:tenantPackage:edit', code: 'edit', text: $t('common.edit') },
-        { auth: 'system:tenantPackage:remove', code: 'delete', text: $t('common.delete') },
+        {
+          auth: 'system:tenantPackage:edit',
+          code: 'edit',
+          text: $t('common.edit'),
+        },
+        {
+          auth: 'system:tenantPackage:remove',
+          code: 'delete',
+          text: $t('common.delete'),
+        },
       ],
       'packageName',
       $t('system.tenantPackage.name'),

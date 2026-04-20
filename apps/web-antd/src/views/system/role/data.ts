@@ -117,13 +117,21 @@ export function useColumns<T = SystemRoleApi.SystemRole>(
       onActionClick,
       [
         { auth: 'system:role:edit', code: 'edit', text: $t('common.edit') },
-        { auth: 'system:role:remove', code: 'delete', text: $t('common.delete') },
+        {
+          auth: 'system:role:remove',
+          code: 'delete',
+          text: $t('common.delete'),
+        },
         {
           auth: 'system:role:edit',
           code: 'allocateDataScope',
           text: $t('system.role.allocateDataScope'),
         },
-        { auth: 'system:role:edit', code: 'allocateUser', text: $t('system.role.allocateUser') },
+        {
+          auth: 'system:role:edit',
+          code: 'allocateUser',
+          text: $t('system.role.allocateUser'),
+        },
       ],
       'roleName',
       $t('system.role.roleName'),

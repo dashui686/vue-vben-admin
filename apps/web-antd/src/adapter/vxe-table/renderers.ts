@@ -29,7 +29,7 @@ import {
 export function registerCellRenderers(vxeUI: VxeUI) {
   // 单元格渲染：图片
   vxeUI.renderer.add('CellImage', {
-    renderTableDefault(renderOpts, params) {
+    renderTableDefault(renderOpts: { props: any; }, params: { column: any; row: any; }) {
       const { props } = renderOpts;
       const { column, row } = params;
       return h(Image, { src: row[column.field], ...props });
@@ -38,7 +38,7 @@ export function registerCellRenderers(vxeUI: VxeUI) {
 
   // 单元格渲染：链接按钮
   vxeUI.renderer.add('CellLink', {
-    renderTableDefault(renderOpts) {
+    renderTableDefault(renderOpts: { props: any; }) {
       const { props } = renderOpts;
       return h(
         Button,
@@ -50,13 +50,13 @@ export function registerCellRenderers(vxeUI: VxeUI) {
 
   // 单元格渲染：标签
   vxeUI.renderer.add('CellTag', {
-    renderTableDefault({ options, props }, { column, row }) {
+    renderTableDefault({ options, props }: { options?: any; props?: any }, { column, row }: { column: any; row: Recordable<any> }) {
       const value = get(row, column.field);
       const tagOptions = options ?? [
         { color: 'success', label: $t('common.enabled'), value: '0' },
         { color: 'error', label: $t('common.disabled'), value: '1' },
       ];
-      const tagItem = tagOptions.find((item) => item.value === value);
+      const tagItem = tagOptions.find((item: { value: any; }) => item.value === value);
       return h(
         Tag,
         {
@@ -70,7 +70,7 @@ export function registerCellRenderers(vxeUI: VxeUI) {
 
   // 单元格渲染：开关
   vxeUI.renderer.add('CellSwitch', {
-    renderTableDefault({ attrs, props }, { column, row }) {
+    renderTableDefault({ attrs, props }: { attrs?: any; props?: any }, { column, row }: { column: any; row: Recordable<any> }) {
       const loadingKey = `__loading_${column.field}`;
       const statusMap: Record<string, string> = {
         '0': $t('common.enabled'),
@@ -112,7 +112,7 @@ export function registerCellRenderers(vxeUI: VxeUI) {
 
   // 单元格渲染：可编辑输入框
   vxeUI.renderer.add('CellInput', {
-    renderTableDefault(renderOpts, { column, row }) {
+    renderTableDefault(renderOpts: { attrs: any; props: any; }, { column, row }: any) {
       const { attrs, props } = renderOpts;
       const value = row[column.field];
       const align = attrs?.align || 'left';
@@ -143,7 +143,7 @@ export function registerCellRenderers(vxeUI: VxeUI) {
 
   // 单元格渲染：可编辑数字输入框
   vxeUI.renderer.add('CellInputNumber', {
-    renderTableDefault(renderOpts, { column, row }) {
+    renderTableDefault(renderOpts: { attrs: any; props: any; }, { column, row }: any) {
       const { attrs, props } = renderOpts;
       const value = row[column.field];
       const align = attrs?.align || 'left';
@@ -177,7 +177,7 @@ export function registerCellRenderers(vxeUI: VxeUI) {
 
   // 单元格渲染：操作按钮
   vxeUI.renderer.add('CellOperation', {
-    renderTableDefault({ attrs, options, props }, { column, row }) {
+    renderTableDefault({ attrs, options, props }: { attrs?: any; options?: any; props?: any }, { column, row }: any) {
       const defaultProps = { size: 'small', type: 'link', ...props };
       let align: string;
       switch (column.align) {
@@ -208,7 +208,7 @@ export function registerCellRenderers(vxeUI: VxeUI) {
       const allOperations: Array<Recordable<any>> = (
         options || ['edit', 'delete']
       )
-        .map((opt) => {
+        .map((opt: any) => {
           if (isString(opt)) {
             return presets[opt]
               ? { code: opt, ...presets[opt], ...defaultProps }
@@ -221,15 +221,15 @@ export function registerCellRenderers(vxeUI: VxeUI) {
             return { ...defaultProps, ...presets[opt.code], ...opt };
           }
         })
-        .map((opt) => {
+        .map((opt: { [x: string]: any; }) => {
           const optBtn: Recordable<any> = {};
           Object.keys(opt).forEach((key) => {
             optBtn[key] = isFunction(opt[key]) ? opt[key](row) : opt[key];
           });
           return optBtn;
         })
-        .filter((opt) => opt.show !== false)
-        .filter((opt) => {
+        .filter((opt: { show: boolean; }) => opt.show !== false)
+        .filter((opt: { auth: string; }) => {
           if (!opt.auth) return true;
           const { hasAccessByCodes } = useAccess();
           return hasAccessByCodes([opt.auth]);

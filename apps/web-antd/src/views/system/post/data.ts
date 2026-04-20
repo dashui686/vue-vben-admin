@@ -163,7 +163,11 @@ export function useColumns(
       onActionClick,
       [
         { auth: 'system:post:edit', code: 'edit', text: $t('common.edit') },
-        { auth: 'system:post:remove', code: 'delete', text: $t('common.delete') },
+        {
+          auth: 'system:post:remove',
+          code: 'delete',
+          text: $t('common.delete'),
+        },
       ],
       'postName',
       $t('system.post.name'),

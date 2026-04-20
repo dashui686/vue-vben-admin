@@ -67,8 +67,5 @@ export function leaveRemove(id: ID | IDS) {
  * @returns void
  */
 export function submitAndStartWorkflow(data: LeaveForm) {
-  return requestClient.postWithMsg(
-    '/workflow/leave/submitAndFlowStart',
-    data,
-  );
+  return requestClient.postWithMsg('/workflow/leave/submitAndFlowStart', data);
 }
