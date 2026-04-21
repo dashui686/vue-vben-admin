@@ -58,7 +58,8 @@ export function toFrontendMenu(backend: BackendMenu): FrontendMenu {
     activeIcon: backend.activeIcon,
     order: backend.orderNum,
     keepAlive: toBool(backend.isCache),
-    hideInMenu: !toBool(backend.visible),
+    // visible: 0=显示，1=隐藏 → hideInMenu: false=显示，true=隐藏
+    hideInMenu: backend.visible === '1',
     hideInTab: toBool(backend.hideTab, false),
     hideInBreadcrumb: toBool(backend.hideBreadcrumb, false),
     hideChildrenInMenu: toBool(backend.hideChildren, false),
@@ -112,7 +113,8 @@ export function toBackendMenu(frontend: FrontendMenu): BackendMenu {
     isFrame,
     isCache: fromBoolStr(meta.keepAlive),
     menuType,
-    visible: fromBoolStr(!meta.hideInMenu),
+    // hideInMenu: true=隐藏，false=显示 → visible: 1=隐藏，0=显示
+    visible: meta.hideInMenu ? '1' : '0',
     status: frontend.status || '0',
     perms: frontend.authCode,
     icon: meta.icon,
@@ -127,9 +129,11 @@ export function toBackendMenu(frontend: FrontendMenu): BackendMenu {
     hideChildren: fromBool(meta.hideChildrenInMenu),
     hideBreadcrumb: fromBool(meta.hideInBreadcrumb),
     hideTab: fromBool(meta.hideInTab),
+    hideInMenu: fromBool(meta.hideInMenu),
     linkSrc: frontend.type === 'embedded' ? meta.iframeSrc : meta.link,
     maxOpenTab: meta.maxNumOfOpenTab,
     redirect: frontend.redirect,
+    remark: meta.link,
   };
 }
 

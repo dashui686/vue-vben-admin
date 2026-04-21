@@ -3,7 +3,8 @@ import type { PropType } from 'vue';
 
 import { onMounted, ref } from 'vue';
 
-import { SyncOutlined } from '@ant-design/icons-vue';
+import { IconifyIcon } from '@vben/icons';
+
 import { Empty, InputSearch, Skeleton, Tree } from 'ant-design-vue';
 
 import { getUserDeptTree } from '#/api/system/user';
@@ -80,7 +81,7 @@ onMounted(loadTree);
           >
             <template #enterButton>
               <a-button @click="handleReload">
-                <SyncOutlined class="text-primary" />
+                <IconifyIcon icon="mdi:refresh" class="text-primary" />
               </a-button>
             </template>
           </InputSearch>
@@ -102,9 +103,7 @@ onMounted(loadTree);
                 {{ label.slice(0, label.indexOf(searchValue)) }}
                 <span class="text-primary">{{ searchValue }}</span>
                 {{
-                  label.slice(
-                    label.indexOf(searchValue) + searchValue.length,
-                  )
+                  label.slice(label.indexOf(searchValue) + searchValue.length)
                 }}
               </span>
               <span v-else>{{ label }}</span>

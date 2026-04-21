@@ -52,7 +52,30 @@ const [Drawer, drawerApi] = useVbenDrawer({
     }
     if (data) {
       currentId = data.id;
-      formApi.setValues(data);
+      // Vben Form 需要使用扁平化的字段名来设置嵌套对象的值
+      const flatValues: any = {
+        ...data,
+        'meta.title': data.meta?.title,
+        'meta.icon': data.meta?.icon,
+        'meta.order': data.meta?.order,
+        'meta.keepAlive': data.meta?.keepAlive,
+        'meta.hideInMenu': data.meta?.hideInMenu,
+        'meta.hideInTab': data.meta?.hideInTab,
+        'meta.hideInBreadcrumb': data.meta?.hideInBreadcrumb,
+        'meta.hideChildrenInMenu': data.meta?.hideChildrenInMenu,
+        'meta.affixTab': data.meta?.affixTab,
+        'meta.affixTabOrder': data.meta?.affixTabOrder,
+        'meta.badge': data.meta?.badge,
+        'meta.badgeType': data.meta?.badgeType,
+        'meta.badgeVariants': data.meta?.badgeVariants,
+        'meta.activePath': data.meta?.activePath,
+        'meta.activeIcon': data.meta?.activeIcon,
+        'meta.link': data.meta?.link,
+        'meta.iframeSrc': data.meta?.iframeSrc,
+        'meta.maxNumOfOpenTab': data.meta?.maxNumOfOpenTab,
+        'meta.query': data.meta?.query,
+      };
+      formApi.setValues(flatValues);
       titleSuffix.value = data.meta?.title ? $t(data.meta.title) : '';
     } else {
       currentId = undefined;
@@ -68,6 +91,41 @@ async function onSubmit() {
 
   drawerApi.lock();
   const data = await formApi.getValues();
+
+  // Vben Form 返回的是扁平化字段 (如 'meta.order')，需要重新嵌套到 meta 对象
+  const meta: any = {};
+  const metaKeys = [
+    'title',
+    'icon',
+    'order',
+    'keepAlive',
+    'hideInMenu',
+    'hideInTab',
+    'hideInBreadcrumb',
+    'hideChildrenInMenu',
+    'affixTab',
+    'affixTabOrder',
+    'badge',
+    'badgeType',
+    'badgeVariants',
+    'activePath',
+    'activeIcon',
+    'link',
+    'iframeSrc',
+    'maxNumOfOpenTab',
+    'query',
+  ];
+
+  for (const key of metaKeys) {
+    const flatKey = `meta.${key}`;
+    if (data[flatKey] !== undefined) {
+      meta[key] = data[flatKey];
+    }
+    delete data[flatKey];
+  }
+
+  // 合并到 data.meta
+  data.meta = { ...data.meta, ...meta };
 
   // 处理 link/embedded 类型
   if (data.type === 'link') {

@@ -160,7 +160,7 @@ export function buildFormSchema(titleSuffix: any): VbenFormSchema[] {
         .min(2, $t('ui.formRules.minLength', [$t('system.menu.path'), 2]))
         .max(100, $t('ui.formRules.maxLength', [$t('system.menu.path'), 100]))
         .refine(
-          (v: string) => v.startsWith('/'),
+          (v: string) => !v.startsWith('/'),
           $t('ui.formRules.startWith', [$t('system.menu.path'), '/']),
         ),
     },
@@ -281,12 +281,18 @@ export function buildFormSchema(titleSuffix: any): VbenFormSchema[] {
     },
     {
       component: 'Input',
-      componentProps: (values: any) => ({
+      componentProps: {
         allowClear: true,
         class: 'w-full',
-        disabled: values.meta?.badgeType !== 'normal',
-      }),
-      dependencies: showWhenTypeNotIn(['button']),
+      },
+      dependencies: {
+        disabled: (values: any) => {
+          // 徽标类型为 'normal' 时才启用
+          return values.meta?.badgeType !== 'normal';
+        },
+        show: (values: any) => !['button'].includes(values.type),
+        triggerFields: ['meta.badgeType'],
+      },
       fieldName: 'meta.badge',
       label: $t('system.menu.badge'),
     },
