@@ -16,22 +16,77 @@ import { z } from '#/adapter/form';
 import { getMenuList, SystemMenuApi } from '#/api/system/menu';
 import { componentKeys } from '#/router/routes';
 
+// ========== 常量定义 ==========
+
+/** Meta 字段键名列表，用于扁平化和重构嵌套对象 */
+export const META_FIELD_KEYS = [
+  'title',
+  'icon',
+  'order',
+  'keepAlive',
+  'hideInMenu',
+  'hideInTab',
+  'hideInBreadcrumb',
+  'hideChildrenInMenu',
+  'affixTab',
+  'affixTabOrder',
+  'badge',
+  'badgeType',
+  'badgeVariants',
+  'activePath',
+  'activeIcon',
+  'link',
+  'iframeSrc',
+  'maxNumOfOpenTab',
+  'query',
+] as const;
+
+// ========== 辅助函数 ==========
+
+/** 创建菜单类型依赖配置 */
+function createTypeDependency(
+  types: string[],
+  mode: 'in' | 'notIn',
+  config: {
+    show?: boolean;
+    disabled?: boolean;
+    rules?: string | null | ((values: any) => string | null);
+  } = {},
+) {
+  const { show, disabled, rules } = config;
+  const checkFn =
+    mode === 'in'
+      ? (values: any) => types.includes(values.type)
+      : (values: any) => !types.includes(values.type);
+
+  const result: Recordable<any> = {
+    triggerFields: ['type'],
+  };
+
+  if (show !== undefined) {
+    result.show = checkFn;
+  } else if (disabled !== undefined) {
+    result.disabled = checkFn;
+  }
+
+  if (rules !== undefined) {
+    result.rules =
+      typeof rules === 'function'
+        ? (values: any) => (checkFn(values) ? rules(values) : null)
+        : rules;
+  }
+
+  return result;
+}
+
+/** 菜单类型在指定范围内的依赖 */
+const showWhenTypeIn = (types: string[]) => createTypeDependency(types, 'in');
+
+/** 菜单类型不在指定范围内的依赖 */
+const showWhenTypeNotIn = (types: string[]) =>
+  createTypeDependency(types, 'notIn');
+
 // ========== 表单 Schema 定义 ==========
-
-/** 辅助函数：生成 dependencies 配置 */
-function showWhenTypeIn(types: string[]) {
-  return {
-    show: (values: any) => types.includes(values.type),
-    triggerFields: ['type'],
-  };
-}
-
-function showWhenTypeNotIn(types: string[]) {
-  return {
-    show: (values: any) => !types.includes(values.type),
-    triggerFields: ['type'],
-  };
-}
 
 /** 菜单类型选项 */
 export function getMenuTypeOptions() {

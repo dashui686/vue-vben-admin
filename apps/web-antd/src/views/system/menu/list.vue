@@ -34,10 +34,13 @@ const cascadeVisible = ref(false);
 const cascadeLoading = ref(false);
 const cascadeTreeData = ref<any[]>([]);
 const cascadeCheckedKeys = ref<Array<number | string>>([]);
+const cascadeTreeLoaded = ref(false);
 
 async function loadCascadeTree() {
+  if (cascadeTreeLoaded.value) return;
   const data = await getMenuList();
   cascadeTreeData.value = buildCascadeTree(data);
+  cascadeTreeLoaded.value = true;
 }
 
 function buildCascadeTree(menus: FrontendMenu[]): any[] {
@@ -70,6 +73,7 @@ async function onCascadeSubmit() {
         await cascadeDeleteMenu(cascadeCheckedKeys.value.join(','));
         message.success('删除成功');
         cascadeVisible.value = false;
+        cascadeTreeLoaded.value = false; // 清除缓存，下次重新加载
         onRefresh();
       } finally {
         cascadeLoading.value = false;

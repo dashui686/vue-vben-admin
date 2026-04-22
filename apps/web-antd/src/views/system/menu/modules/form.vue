@@ -9,7 +9,7 @@ import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { useVbenForm } from '#/adapter/form';
 import { createMenu, updateMenu } from '#/api/system/menu';
 
-import { buildFormSchema } from '../data';
+import { buildFormSchema, META_FIELD_KEYS } from '../data';
 
 const emit = defineEmits<{
   success: [];
@@ -35,6 +35,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
   onConfirm: onSubmit,
   onOpenChange(isOpen) {
     if (!isOpen) return;
+
+    titleSuffix.value = ''; // 重置标题后缀
     const data = drawerApi.getData();
     currentId = data?.id;
 
@@ -53,28 +55,12 @@ const [Drawer, drawerApi] = useVbenDrawer({
     if (data) {
       currentId = data.id;
       // Vben Form 需要使用扁平化的字段名来设置嵌套对象的值
-      const flatValues: any = {
-        ...data,
-        'meta.title': data.meta?.title,
-        'meta.icon': data.meta?.icon,
-        'meta.order': data.meta?.order,
-        'meta.keepAlive': data.meta?.keepAlive,
-        'meta.hideInMenu': data.meta?.hideInMenu,
-        'meta.hideInTab': data.meta?.hideInTab,
-        'meta.hideInBreadcrumb': data.meta?.hideInBreadcrumb,
-        'meta.hideChildrenInMenu': data.meta?.hideChildrenInMenu,
-        'meta.affixTab': data.meta?.affixTab,
-        'meta.affixTabOrder': data.meta?.affixTabOrder,
-        'meta.badge': data.meta?.badge,
-        'meta.badgeType': data.meta?.badgeType,
-        'meta.badgeVariants': data.meta?.badgeVariants,
-        'meta.activePath': data.meta?.activePath,
-        'meta.activeIcon': data.meta?.activeIcon,
-        'meta.link': data.meta?.link,
-        'meta.iframeSrc': data.meta?.iframeSrc,
-        'meta.maxNumOfOpenTab': data.meta?.maxNumOfOpenTab,
-        'meta.query': data.meta?.query,
-      };
+      const flatValues: any = { ...data };
+      META_FIELD_KEYS.forEach((key) => {
+        if (data.meta?.[key] !== undefined) {
+          flatValues[`meta.${key}`] = data.meta[key];
+        }
+      });
       formApi.setValues(flatValues);
       titleSuffix.value = data.meta?.title ? $t(data.meta.title) : '';
     } else {
@@ -94,35 +80,13 @@ async function onSubmit() {
 
   // Vben Form 返回的是扁平化字段 (如 'meta.order')，需要重新嵌套到 meta 对象
   const meta: any = {};
-  const metaKeys = [
-    'title',
-    'icon',
-    'order',
-    'keepAlive',
-    'hideInMenu',
-    'hideInTab',
-    'hideInBreadcrumb',
-    'hideChildrenInMenu',
-    'affixTab',
-    'affixTabOrder',
-    'badge',
-    'badgeType',
-    'badgeVariants',
-    'activePath',
-    'activeIcon',
-    'link',
-    'iframeSrc',
-    'maxNumOfOpenTab',
-    'query',
-  ];
-
-  for (const key of metaKeys) {
+  META_FIELD_KEYS.forEach((key) => {
     const flatKey = `meta.${key}`;
     if (data[flatKey] !== undefined) {
       meta[key] = data[flatKey];
     }
     delete data[flatKey];
-  }
+  });
 
   // 合并到 data.meta
   data.meta = { ...data.meta, ...meta };
