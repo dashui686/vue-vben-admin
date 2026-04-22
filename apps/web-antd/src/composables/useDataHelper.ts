@@ -146,7 +146,7 @@ export async function confirmStatusChange(
   row: any,
   nameField: string,
   nameValue: string,
-  updateApi: (id: string | number, data: any) => Promise<any>,
+  updateApi: (id: number | string, data: any) => Promise<any>,
   idField: string = 'id',
 ): Promise<boolean> {
   const statusText = newStatus === '0' ? '启用' : '停用';
@@ -182,10 +182,10 @@ export function apiSelectField(
   api: () => Promise<any[]>,
   config: {
     labelField?: string;
-    valueField?: string;
+    multiple?: boolean;
     placeholder?: string;
     required?: boolean;
-    multiple?: boolean;
+    valueField?: string;
   } = {},
 ): VbenFormSchema {
   const {
@@ -220,12 +220,12 @@ export function apiTreeSelectField(
   label: string,
   api: () => Promise<any[]>,
   config: {
-    labelField?: string;
-    valueField?: string;
     childrenField?: string;
+    labelField?: string;
     placeholder?: string;
     required?: boolean;
     treeDefaultExpandAll?: boolean;
+    valueField?: string;
   } = {},
 ): VbenFormSchema {
   const {

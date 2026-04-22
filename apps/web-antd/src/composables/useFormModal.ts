@@ -4,13 +4,13 @@ import { z } from '#/adapter/form';
 
 interface UseFormModalOptions<T> {
   /** 获取详情的 API 函数 */
-  getDetailApi?: (id: string | number) => Promise<T>;
+  getDetailApi?: (id: number | string) => Promise<T>;
   /** ID 字段名 */
   idField?: string;
   /** 额外的值处理函数 */
   onValuesReady?: (values: T) => T;
   /** 重置表单前的回调 */
-  beforeReset?: () => void | Promise<void>;
+  beforeReset?: () => Promise<void> | void;
 }
 
 /**
@@ -75,8 +75,8 @@ export async function handleFormOpenChange<T extends Record<string, any>>(
 /**
  * 创建通用的 ID Ref
  */
-export function useFormId(initialValue?: string | number) {
-  const idRef = ref<string | number | undefined>(initialValue);
+export function useFormId(initialValue?: number | string) {
+  const idRef = ref<number | string | undefined>(initialValue);
   return idRef;
 }
 
@@ -84,9 +84,9 @@ export function useFormId(initialValue?: string | number) {
  * 通用的验证密码规则
  */
 export function createPasswordRules(config?: {
-  min?: number;
   max?: number;
   message?: string;
+  min?: number;
 }) {
   const { min = 5, max = 20, message } = config || {};
   return z
