@@ -9,6 +9,7 @@ import { Button } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createDept, getDept, updateDept } from '#/api/system/dept';
+import { handleFormOpenChange } from '#/composables/useFormModal';
 import { $t } from '#/locales';
 
 import { useFormSchema } from '../data';
@@ -53,18 +54,11 @@ const [Modal, modalApi] = useVbenModal({
   async onOpenChange(isOpen) {
     if (isOpen) {
       const data = modalApi.getData<SystemDeptApi.SystemDept>();
-      formApi.resetForm();
-
-      if (data?.deptId) {
-        // 编辑模式：获取完整数据
-        const deptData = await getDept(data.deptId);
-        deptId.value = deptData.deptId;
-        formApi.setValues(deptData);
-      } else {
-        // 新增模式
-        deptId.value = undefined;
-        formApi.setValues(data || {});
-      }
+      await handleFormOpenChange(formApi, modalApi, data, {
+        getDetailApi: getDept,
+        idField: 'deptId',
+      });
+      deptId.value = data?.deptId;
     }
   },
 });

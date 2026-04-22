@@ -202,8 +202,7 @@ async function saveOrder() {
     );
     message.success('保存排序成功');
     refreshGrid();
-  } catch (error) {
-    console.error('保存排序失败:', error);
+  } catch {
     message.error('保存排序失败');
   }
 }

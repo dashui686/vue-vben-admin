@@ -9,6 +9,7 @@ import { Button } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createUser, getUser, updateUser } from '#/api/system/user';
+import { handleFormOpenChange } from '#/composables/useFormModal';
 import { $t } from '#/locales';
 
 import { useFormSchema } from '../data';
@@ -56,22 +57,16 @@ const [Modal, modalApi] = useVbenModal({
   async onOpenChange(isOpen) {
     if (isOpen) {
       const data = modalApi.getData<SystemUserApi.SystemUser>();
-      formApi.resetForm();
-
-      if (data?.userId) {
-        // 编辑：获取完整用户信息（含角色/岗位ID）
-        const userInfo = await getUser(data.userId);
-        userId.value = userInfo.user.userId;
-        formApi.setValues({
+      await handleFormOpenChange(formApi, modalApi, data, {
+        getDetailApi: getUser,
+        idField: 'userId',
+        onValuesReady: (userInfo) => ({
           ...userInfo.user,
           roleIds: userInfo.roleIds,
           postIds: userInfo.postIds,
-        });
-      } else {
-        // 新增
-        userId.value = undefined;
-        formApi.setValues(data || {});
-      }
+        }),
+      });
+      userId.value = data?.userId;
     }
   },
 });

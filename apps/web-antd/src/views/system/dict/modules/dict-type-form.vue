@@ -9,6 +9,7 @@ import { Button } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createDictType, getDictType, updateDictType } from '#/api/system/dict';
+import { handleFormOpenChange } from '#/composables/useFormModal';
 import { $t } from '#/locales';
 
 import { useDictTypeFormSchema } from '../data';
@@ -49,15 +50,11 @@ const [Modal, modalApi] = useVbenModal({
   async onOpenChange(isOpen) {
     if (isOpen) {
       const data = modalApi.getData<SystemDictTypeApi.SystemDictType>();
-      formApi.resetForm();
-      if (data?.dictId) {
-        const detail = await getDictType(data.dictId);
-        dictId.value = detail.dictId;
-        formApi.setValues(detail);
-      } else {
-        dictId.value = undefined;
-        formApi.setValues(data || {});
-      }
+      await handleFormOpenChange(formApi, modalApi, data, {
+        getDetailApi: getDictType,
+        idField: 'dictId',
+      });
+      dictId.value = data?.dictId;
     }
   },
 });

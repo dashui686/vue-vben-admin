@@ -12,6 +12,7 @@ import { Checkbox, Spin } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createRole, getMenuTreeselect, getRole, updateRole } from '#/api';
+import { handleFormOpenChange } from '#/composables/useFormModal';
 import { getAllTreeKeys } from '#/composables/useGridHelper';
 import { $t } from '#/locales';
 
@@ -61,8 +62,11 @@ const [Drawer, drawerApi] = useVbenDrawer({
   async onOpenChange(isOpen) {
     if (isOpen) {
       const data = drawerApi.getData<SystemRoleApi.SystemRole>();
-      formApi.resetForm();
-      if (data.roleId) {
+      await handleFormOpenChange(formApi, drawerApi, data, {
+        getDetailApi: getRole,
+        idField: 'roleId',
+      });
+      if (data?.roleId) {
         formData.value = await getRole(data.roleId);
         roleId.value = data.roleId;
       } else {
@@ -71,12 +75,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
       await loadPermissions();
       // Wait for Vue to flush DOM updates (form fields mounted)
       await nextTick();
-      if (data) {
-        formApi.setValues(data);
-        // 设置已选中的菜单
-        if (data.menuIds && data.menuIds.length > 0) {
-          defaultCheckedKeys.value = data.menuIds.map(String);
-        }
+      if (data && data.menuIds && data.menuIds.length > 0) {
+        defaultCheckedKeys.value = data.menuIds.map(String);
       }
     }
   },

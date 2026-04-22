@@ -9,6 +9,7 @@ import { Button } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createPost, getPost, updatePost } from '#/api/system/post';
+import { handleFormOpenChange } from '#/composables/useFormModal';
 import { $t } from '#/locales';
 
 import { useFormSchema } from '../data';
@@ -56,16 +57,11 @@ const [Modal, modalApi] = useVbenModal({
   async onOpenChange(isOpen) {
     if (isOpen) {
       const data = modalApi.getData<SystemPostApi.SystemPost>();
-      formApi.resetForm();
-
-      if (data?.postId) {
-        const postData = await getPost(data.postId);
-        postId.value = postData.postId;
-        formApi.setValues(postData);
-      } else {
-        postId.value = undefined;
-        formApi.setValues(data || {});
-      }
+      await handleFormOpenChange(formApi, modalApi, data, {
+        getDetailApi: getPost,
+        idField: 'postId',
+      });
+      postId.value = data?.postId;
     }
   },
 });

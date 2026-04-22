@@ -48,9 +48,9 @@ function createTypeDependency(
   types: string[],
   mode: 'in' | 'notIn',
   config: {
-    show?: boolean;
     disabled?: boolean;
-    rules?: string | null | ((values: any) => string | null);
+    rules?: ((values: any) => null | string) | null | string;
+    show?: boolean;
   } = {},
 ) {
   const { show, disabled, rules } = config;

@@ -130,8 +130,8 @@ async function handleConfirm() {
     unallocatedGridApi.grid.clearCheckboxRow();
     emits('success');
     emits('update:open', false);
-  } catch (error) {
-    console.error('分配用户失败:', error);
+  } catch {
+    // 错误由请求拦截器统一处理
   } finally {
     confirmLoading.value = false;
   }

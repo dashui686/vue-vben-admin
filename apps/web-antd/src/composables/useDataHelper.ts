@@ -1,5 +1,7 @@
 import type { VbenFormSchema } from '#/adapter/form';
 
+import { message, Modal } from 'ant-design-vue';
+
 import { $t } from '#/locales';
 
 /**
@@ -127,5 +129,128 @@ export function operationColumn(
     showOverflow: false,
     title,
     ...columnProps,
+  };
+}
+
+/**
+ * 统一的状态切换确认函数
+ * @param newStatus - 新状态值 '0' 或 '1'
+ * @param row - 当前行数据
+ * @param nameField - 名称字段
+ * @param nameValue - 名称值
+ * @param updateApi - 更新状态的 API 函数
+ * @param successMsg - 成功提示消息
+ */
+export async function confirmStatusChange(
+  newStatus: string,
+  row: any,
+  nameField: string,
+  nameValue: string,
+  updateApi: (id: string | number, data: any) => Promise<any>,
+  idField: string = 'id',
+): Promise<boolean> {
+  const statusText = newStatus === '0' ? '启用' : '停用';
+  const displayName = row[nameField] || nameValue || '该项';
+
+  return new Promise((resolve) => {
+    Modal.confirm({
+      title: '确认操作',
+      content: `确认要${statusText}"${displayName}"吗？`,
+      onOk: async () => {
+        try {
+          await updateApi(row[idField], { ...row, status: newStatus });
+          message.success(`${statusText}成功`);
+          resolve(true);
+        } catch (error) {
+          console.error('状态更新失败:', error);
+          resolve(false);
+        }
+      },
+      onCancel: () => {
+        resolve(false);
+      },
+    });
+  });
+}
+
+/**
+ * 通用的 API Select 字段配置（单选）
+ */
+export function apiSelectField(
+  fieldName: string,
+  label: string,
+  api: () => Promise<any[]>,
+  config: {
+    labelField?: string;
+    valueField?: string;
+    placeholder?: string;
+    required?: boolean;
+    multiple?: boolean;
+  } = {},
+): VbenFormSchema {
+  const {
+    labelField = 'name',
+    valueField = 'id',
+    placeholder = `请选择${label}`,
+    required = false,
+    multiple = false,
+  } = config;
+
+  return {
+    component: 'ApiSelect',
+    fieldName,
+    label,
+    componentProps: {
+      api,
+      labelField,
+      valueField,
+      mode: multiple ? 'multiple' : undefined,
+      placeholder,
+      allowClear: true,
+    },
+    rules: required ? 'required' : undefined,
+  };
+}
+
+/**
+ * 通用的 API TreeSelect 字段配置
+ */
+export function apiTreeSelectField(
+  fieldName: string,
+  label: string,
+  api: () => Promise<any[]>,
+  config: {
+    labelField?: string;
+    valueField?: string;
+    childrenField?: string;
+    placeholder?: string;
+    required?: boolean;
+    treeDefaultExpandAll?: boolean;
+  } = {},
+): VbenFormSchema {
+  const {
+    labelField = 'name',
+    valueField = 'id',
+    childrenField = 'children',
+    placeholder = `请选择${label}`,
+    required = false,
+    treeDefaultExpandAll = true,
+  } = config;
+
+  return {
+    component: 'ApiTreeSelect',
+    fieldName,
+    label,
+    componentProps: {
+      api,
+      labelField,
+      valueField,
+      childrenField,
+      placeholder,
+      allowClear: true,
+      treeDefaultExpandAll,
+      class: 'w-full',
+    },
+    rules: required ? 'required' : undefined,
   };
 }

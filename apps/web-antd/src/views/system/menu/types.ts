@@ -5,7 +5,7 @@ export type BackendStatus = '0' | '1';
 
 export interface BackendMenu {
   menuId?: string;
-  parentId: string | number;
+  parentId: number | string;
   menuName: string;
   orderNum: number;
   path: string;

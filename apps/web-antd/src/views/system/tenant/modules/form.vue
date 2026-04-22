@@ -9,6 +9,7 @@ import { Button } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createTenant, getTenant, updateTenant } from '#/api/system/tenant';
+import { handleFormOpenChange } from '#/composables/useFormModal';
 import { $t } from '#/locales';
 
 import { useFormSchema } from '../data';
@@ -49,15 +50,11 @@ const [Modal, modalApi] = useVbenModal({
   async onOpenChange(isOpen) {
     if (isOpen) {
       const data = modalApi.getData<SystemTenantApi.SystemTenant>();
-      formApi.resetForm();
-      if (data?.id) {
-        const detail = await getTenant(data.id);
-        currentId.value = detail.id;
-        formApi.setValues(detail);
-      } else {
-        currentId.value = undefined;
-        formApi.setValues(data || {});
-      }
+      await handleFormOpenChange(formApi, modalApi, data, {
+        getDetailApi: getTenant,
+        idField: 'id',
+      });
+      currentId.value = data?.id;
     }
   },
 });
